@@ -1,0 +1,10 @@
+# Mapas de contexto são por-desenvolvedor — nunca versionar
+contexts/
+
+# Configs/segredos locais
+*.local.json
+.env
+
+# Lixo de SO/editor
+.DS_Store
+*.swp

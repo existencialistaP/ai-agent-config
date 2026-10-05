@@ -1,0 +1,25 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+
+  // Modelo principal + modelo "pequeno" (compaction/summary).
+  // Ajuste aqui se a equipe usar outro provider/modelo — cada membro
+  // ainda pode sobrescrever no próprio ~/.config/opencode/opencode.json.
+  "model": "opencode-go/deepseek-v4-pro",
+  "small_model": "opencode-go/deepseek-v4.1-flash",
+
+  // Superpowers = o motor do SDD (14 skills). Instalado como plugin git,
+  // então todo mundo fica na mesma versão e recebe update via `git pull`
+  // no plugin manager. Para fixar uma versão exata, troque por:
+  //   "superpowers@git+https://github.com/obra/superpowers.git#v6.3.0"
+  "plugin": [
+    "superpowers@git+https://github.com/obra/superpowers.git"
+  ],
+
+  // O comando/skill /context lê e escreve os mapas de contexto do projeto
+  // em ~/.config/opencode/contexts/ (por desenvolvedor, não versionado aqui).
+  "permission": {
+    "read": { "~/.config/opencode/contexts/**": "allow" },
+    "edit": { "~/.config/opencode/contexts/**": "allow" },
+    "external_directory": { "~/.config/opencode/contexts/**": "allow" }
+  }
+}
