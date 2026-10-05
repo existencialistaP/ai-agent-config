@@ -6,12 +6,12 @@ Configuração compartilhada do [OpenCode](https://opencode.ai) com o fluxo comp
 da equipe.
 
 Objetivo: todo mundo usa o mesmo fluxo, as mesmas convenções e as mesmas capacidades —
-versionado num único lugar, fácil de atualizar com `git pull`.
+versionado num único lugar, atualizável com `git pull`.
 
 ## O que está incluso
 
-**Superpowers** (motor do SDD, 14 skills) — instalado como plugin git via `opencode.jsonc`,
-então todos ficam na mesma versão:
+**Superpowers** (motor do SDD) — instalado como plugin git via `opencode.jsonc`, então todos
+ficam na mesma versão:
 
 - brainstorming, writing-plans, subagent-driven-development, test-driven-development,
   systematic-debugging, dispatching-parallel-agents, using-git-worktrees,
@@ -32,37 +32,35 @@ então todos ficam na mesma versão:
 
 **Agente** (`agents/reviewer.md`) — subagent `reviewer` read-only para code review.
 
-**Skill** (`skills/context/`) — skill de mapa de contexto de projeto (registrada pelo
-`plugins/sdd.js`, sem precisar de symlink).
+**Skill** (`skills/context/`) — skill de mapa de contexto de projeto.
 
-## Pré-requisitos
+## Como funciona a instalação
 
-- OpenCode v2+ (`opencode --version`)
-- Git
-- Provider autenticado (no nosso caso `opencode-go`): `opencode auth login`
+O OpenCode descobre agents/commands/skills nos diretórios globais
+`~/.config/opencode/{agents,commands,skills}/`. O `install.sh` faz **symlinks** desses
+diretórios do repo para lá — assim `git pull` atualiza tudo automaticamente, sem copiar
+arquivos e sem variáveis de ambiente.
 
 ## Instalação
 
 ```bash
 git clone git@github.com:SUA-ORG/opencode-sdd.git ~/.config/opencode-sdd
-~/.config/opencode-sdd/install.sh
-source ~/.bashrc   # ou ~/.zshrc / ~/.profile
+bash ~/.config/opencode-sdd/install.sh
 ```
 
-O `install.sh` adiciona duas env vars no seu shell rc:
+O script:
 
-```bash
-export OPENCODE_CONFIG_DIR="$HOME/.config/opencode-sdd"   # agents, commands, plugins
-export OPENCODE_CONFIG="$HOME/.config/opencode-sdd/opencode.jsonc"  # model, plugin, permissions
-```
+1. Cria symlinks `~/.config/opencode/{agents,commands,skills}` → repo.
+2. Config: se você já tem um `opencode.json`/`opencode.jsonc`, ele **não sobrescreve** —
+   imprime as chaves para você adicionar manualmente. Se não tem, copia o da equipe.
 
 Valide:
 
 ```bash
-opencode debug config
+opencode debug agents          # deve listar "reviewer"
 ```
 
-(Deve aparecer o `model`, o plugin do Superpowers e as skills `context`, `brainstorming`, etc.)
+E pergunte ao agente para listar as skills (deve aparecer `context`, `brainstorming`, etc.).
 
 ## Uso
 
@@ -88,13 +86,25 @@ Para algo pequeno e sem ambiguidade, vá direto em `/feature`.
 cd ~/.config/opencode-sdd && git pull
 ```
 
-(Se a equipe fixar a versão do Superpowers no `opencode.jsonc`, atualize o pin lá também.)
-
 ## Como contribuir / estender
 
 - **Comando novo:** crie `commands/<nome>.md` (frontmatter `description` + template com `$ARGUMENTS`).
 - **Agente novo:** crie `agents/<nome>.md` (frontmatter `description`, `mode`, `permission`).
-- **Skill nova:** crie `skills/<nome>/SKILL.md` — o `plugins/sdd.js` já registra a pasta `skills/`.
-- **Ajuste de config:** edite `opencode.jsonc` (modelo, permissions, plugins).
+- **Skill nova:** crie `skills/<nome>/SKILL.md` (frontmatter `name` + `description`).
+- **Ajuste de config:** edite `opencode.jsonc` (modelo, plugins, permissions).
 
 Abra um PR; revise com `/review` antes de mergear.
+
+## Migrando de um setup antigo (vendor + skills.paths)
+
+Se o seu `~/.config/opencode/opencode.jsonc` ainda aponta para um clone vendored do
+Superpowers (`skills.paths: ["~/.config/opencode/vendor/superpowers/skills"]`), troque por
+um plugin git e remova o clone:
+
+```jsonc
+"plugin": ["superpowers@git+https://github.com/obra/superpowers.git"]
+```
+
+```bash
+rm -rf ~/.config/opencode/vendor/superpowers
+```
