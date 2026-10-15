@@ -1,0 +1,5 @@
+#!/bin/sh
+case "$1 $2" in
+  "gateway status") printf '{"address":"http://127.0.0.1:17321"}\n' ;;
+esac
+exit 0

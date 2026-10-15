@@ -1,110 +1,108 @@
-# OpenCode SDD — Config Compartilhada da Equipe
+# ai-agent-config
 
-Configuração compartilhada do [OpenCode](https://opencode.ai) com o fluxo completo de
-**Spec-Driven / Subagent-Driven Development (SDD)** baseado no
-[Superpowers](https://github.com/obra/superpowers), mais comandos, agente e skills próprios
-da equipe.
+Configuracao compartilhada de **OpenCode** e **OMP** (Oh My Pi) num único
+repositorio: os dois harnesses usam os mesmos `commands` e `skills`, e cada um
+mantem o proprio agente de review.
 
-Objetivo: todo mundo usa o mesmo fluxo, as mesmas convenções e as mesmas capacidades —
-versionado num único lugar, atualizável com `git pull`.
+## Instalacao
 
-## O que está incluso
-
-**Superpowers** (motor do SDD) — instalado como plugin git via `opencode.jsonc`, então todos
-ficam na mesma versão:
-
-- brainstorming, writing-plans, subagent-driven-development, test-driven-development,
-  systematic-debugging, dispatching-parallel-agents, using-git-worktrees,
-  requesting-code-review, receiving-code-review, verification-before-completion,
-  finishing-a-development-branch, executing-plans, using-superpowers, writing-skills
-
-**Comandos** (`commands/`) — os pontos de entrada do fluxo:
-
-| Comando | O que faz |
-|---|---|
-| `/tospec` | Transforma ideia/requisito em spec detalhada e pronta pra implementar |
-| `/feature` | Implementa uma spec aprovada (TDD, subagents, verificação) |
-| `/debug` | Investiga e corrige bugs de forma sistemática (root cause antes de fix) |
-| `/review` | Code review do que acabou de ser implementado |
-| `/finish` | Verifica e fecha a task com evidência |
-| `/investigate` | Investigação read-only do codebase |
-| `/context` | Cria/atualiza o mapa de contexto do projeto |
-
-**Agente** (`agents/reviewer.md`) — subagent `reviewer` read-only para code review.
-
-**Skill** (`skills/context/`) — skill de mapa de contexto de projeto.
-
-## Como funciona a instalação
-
-O OpenCode descobre agents/commands/skills nos diretórios globais
-`~/.config/opencode/{agents,commands,skills}/`. O `install.sh` faz **symlinks** desses
-diretórios do repo para lá — assim `git pull` atualiza tudo automaticamente, sem copiar
-arquivos e sem variáveis de ambiente.
-
-## Instalação
-
-```bash
-git clone git@github.com:SUA-ORG/opencode-sdd.git ~/.config/opencode-sdd
-bash ~/.config/opencode-sdd/install.sh
+```sh
+git clone https://github.com/existencialistaP/ai-agent-config.git ~/.local/share/ai-agent-config
+~/.local/share/ai-agent-config/install.sh
+~/.local/share/ai-agent-config/doctor.sh
 ```
 
-O script:
+O `install.sh`:
 
-1. Cria symlinks `~/.config/opencode/{agents,commands,skills}` → repo.
-2. Config: se você já tem um `opencode.json`/`opencode.jsonc`, ele **não sobrescreve** —
-   imprime as chaves para você adicionar manualmente. Se não tem, copia o da equipe.
+- cria `~/.config/opencode` e `~/.omp/agent`;
+- liga (symlink) `opencode.jsonc`, `AGENTS.md`, `agents/`, `commands/`,
+  `skills/` e `plugins/adaptive-thinking.js` do repositorio para o OpenCode;
+- liga `~/.omp/agent/{AGENTS.md,config.yml,mcp.json,agents}` no OMP;
+- liga `~/.omp/agent/{commands,skills}` -> `~/.config/opencode/{commands,skills}`
+  (segunda ordem: o OMP consome o que o OpenCode ja publica);
+- copia os seeds mutaveis (`cli.json`, `tui.jsonc`, `omp-plugins.lock.json`,
+  `marketplaces.json`) **somente** se ainda nao existirem no destino;
+- move qualquer conflito real para
+  `~/.local/state/ai-agent-config/backups/<timestamp>/` antes de criar o link.
 
-Valide:
+Nenhum passo le, copia ou restaura credencial: auth (`auth.json`), bancos,
+sessoes, caches e `contexts/` ficam de fora e nunca sao tocados.
 
-```bash
-opencode debug agents          # deve listar "reviewer"
+Previa sem efeito colateral:
+
+```sh
+./install.sh --dry-run
 ```
 
-E pergunte ao agente para listar as skills (deve aparecer `context`, `brainstorming`, etc.).
+## doctor.sh
 
-## Uso
+Confere executaveis (`opencode`, `omp`, `serena`, `openwiki`, `sleev`),
+resolucao de todos os links, ausencia de links quebrados, ausencia do caminho do
+home da maquina no que vai para o Git, presenca dos 29 skills e 20 commands
+compartilhados, o gateway do `sleev` em `127.0.0.1:17321` e a presenca opcional
+das integracoes geradas por Orca/herdr. Falta de auth, gateway ou integracao
+externa vira aviso com a instrucao manual; erro estrutural falha com exit 1.
 
-Fluxo completo de uma feature:
+## Estrutura
 
 ```
-/tospec  → aprova a spec →  /feature  →  /review  →  /finish
+opencode/            fonte unica de commands, skills, agents e config do OpenCode
+  opencode.jsonc     modelos, permissoes, providers e MCPs
+  AGENTS.md          workflow global
+  agents/reviewer.md
+  commands/          20 comandos compartilhados
+  skills/            29 skills compartilhadas
+  plugins/adaptive-thinking.js
+  cli.json           seed (Orca/herdr reescrevem)
+  tui.jsonc          seed (Orca/herdr reescrevem)
+omp/
+  AGENTS.md          workflow global do OMP
+  config.yml         modelos, presets, temas e guardrails de shell
+  mcp.json           MCPs do OMP (serena via PATH)
+  agents/code-reviewer.md
+  plugins/omp-plugins.lock.json   declaracao de i-have-adhd@0.4.1
+  marketplaces.json               seed; ${HOME} e resolvido na copia
+mapping.sh           mapa origem->destino usado por install.sh e doctor.sh
 ```
 
-Para algo pequeno e sem ambiguidade, vá direto em `/feature`.
+`opencode/commands` e `opencode/skills` sao a unica fonte: o OMP aponta para o
+que o OpenCode publica, e a excecao orfa `context-update.md` foi removida (o
+comando valido e `context.md`).
 
-## O que NÃO está versionado (fica no seu setup pessoal)
+O agente `code-reviewer.md` do OMP continua proprio porque a interface dele
+difere do `reviewer.md` do OpenCode.
 
-- `contexts/` — mapas de contexto de projeto (`~/.config/opencode/contexts/*.md`); são
-  por-desenvolvedor e por-máquina.
-- `cli.json` — preferências de TUI (tema, atalhos, animações).
-- Plugins pessoais (ex.: notificações de desktop via `notify-send`).
-- `service.json` — token local do servidor (nunca comitar).
+## Deliberadamente manual
 
-## Como atualizar
+- Autenticacao de cada harness (`/login`) e do provider local.
+- Plugin `i-have-adhd@0.4.1`:
+  ```sh
+  omp plugin marketplace add ayghri/i-have-adhd
+  omp plugin install i-have-adhd@0.4.1
+  ```
+- Gateway do sleev:
+  ```sh
+  sleev setup --no-open
+  # depois do login no navegador:
+  sleev gateway bind --host 127.0.0.1 --port 17321 --restart
+  ```
+- Integracoes de Orca/herdr: geradas por esses aplicativos, ficam fora do Git.
 
-```bash
-cd ~/.config/opencode-sdd && git pull
+## Nao versionado
+
+Runtime e estado de qualquer um dos harnesses: `contexts/`, `vendor/`,
+`.serena/`, `node_modules/`, `auth.json`, `account.json`, `service.json`,
+`.env*`, bancos e WAL/SHM, logs, sessoes, caches, backups e AppImages.
+
+O OMP reescreve `~/.omp/agent/config.yml` (versao de setup, tema, presets)
+atravessando o link: revise `git diff` antes de commitar.
+
+## Testes
+
+```sh
+shellcheck -x install.sh doctor.sh mapping.sh
+bats tests/install.bats
 ```
 
-## Como contribuir / estender
-
-- **Comando novo:** crie `commands/<nome>.md` (frontmatter `description` + template com `$ARGUMENTS`).
-- **Agente novo:** crie `agents/<nome>.md` (frontmatter `description`, `mode`, `permission`).
-- **Skill nova:** crie `skills/<nome>/SKILL.md` (frontmatter `name` + `description`).
-- **Ajuste de config:** edite `opencode.jsonc` (modelo, plugins, permissions).
-
-Abra um PR; revise com `/review` antes de mergear.
-
-## Migrando de um setup antigo (vendor + skills.paths)
-
-Se o seu `~/.config/opencode/opencode.jsonc` ainda aponta para um clone vendored do
-Superpowers (`skills.paths: ["~/.config/opencode/vendor/superpowers/skills"]`), troque por
-um plugin git e remova o clone:
-
-```jsonc
-"plugin": ["superpowers@git+https://github.com/obra/superpowers.git"]
-```
-
-```bash
-rm -rf ~/.config/opencode/vendor/superpowers
-```
+Os testes usam `HOME` descartavel e executaveis falsos em `tests/fakes/`; nao
+tocam rede, credenciais ou o home real.

@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "marketplaces": [
+    {
+      "name": "i-have-adhd",
+      "sourceType": "github",
+      "sourceUri": "ayghri/i-have-adhd",
+      "catalogPath": "${HOME}/.omp/plugins/cache/marketplaces/i-have-adhd/marketplace.json",
+      "addedAt": "2026-10-14T20:26:22.838Z",
+      "updatedAt": "2026-10-14T20:26:22.838Z"
+    }
+  ]
+}

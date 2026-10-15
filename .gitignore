@@ -1,10 +1,30 @@
-# Mapas de contexto são por-desenvolvedor — nunca versionar
+# Runtime e estado de OpenCode/OMP: nunca versionar.
 contexts/
-
-# Configs/segredos locais
-*.local.json
+vendor/
+.serena/
+node_modules/
+package.json
+package-lock.json
+bun.lock
+auth.json
+account.json
+service.json
 .env
+.env.*
 
-# Lixo de SO/editor
-.DS_Store
-*.swp
+# Bancos, journals, logs, sessoes e caches.
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+logs/
+sessions/
+terminal-sessions/
+cache/
+*.log
+
+# Backups e binarios.
+.backup-*/
+.bak-*
+*.AppImage

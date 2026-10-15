@@ -1,0 +1,100 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+
+  "model": "opencode-go/deepseek-v4.1-flash",
+
+  // V4.1 Flash replaces V4 Pro: Pro scores lower on AA and is being retired
+  // (DeepSeek reroutes v4-pro to V4.1 Flash since 2026-09-14).
+  // (V2 keeps the small model on the built-in `title` agent.)
+  "agents": {
+    "title": { "model": "opencode-go/deepseek-v4.1-flash" },
+    "explore": { "model": "opencode-go/deepseek-v4.1-flash" },
+    "reviewer": { "model": "opencode-go/mimo-v2.6-pro" }
+  },
+
+  // Run built-in formatters (prettier, biome, gofmt, ruff, ...) after edits when available.
+  "formatter": true,
+
+  // V2 ordered permission rules — last matching rule wins.
+  // Base policy already allows everything; these add the context-map allow and guardrails.
+  "permissions": [
+    { "action": "read", "resource": "~/.config/opencode/contexts/*", "effect": "allow" },
+    { "action": "edit", "resource": "~/.config/opencode/contexts/*", "effect": "allow" },
+    { "action": "external_directory", "resource": "~/.config/opencode/contexts/*", "effect": "allow" },
+
+    // Hard guardrails: irreversible / out-of-band actions are denied even with autoaccept.
+    { "action": "shell", "resource": "git push *", "effect": "deny" },
+    { "action": "shell", "resource": "git -C * push *", "effect": "deny" },
+    { "action": "shell", "resource": "git * push *", "effect": "deny" },
+    { "action": "shell", "resource": "git reset --hard *", "effect": "deny" },
+    { "action": "shell", "resource": "git clean *", "effect": "deny" },
+    { "action": "shell", "resource": "rm -rf *", "effect": "deny" },
+    { "action": "shell", "resource": "rm -fr *", "effect": "deny" },
+    { "action": "shell", "resource": "rm -r -f *", "effect": "deny" },
+    { "action": "shell", "resource": "sudo *", "effect": "deny" }
+  ],
+
+  "compaction": {
+    "auto": true,
+    "keep": { "tokens": 20000 }
+  },
+
+  "provider": {
+    "opencode-go": {
+      "options": {
+        "headers": {
+          "sleev-provider": "opencode-go",
+          "sleev-harness": "opencode"
+        },
+        "baseURL": "http://127.0.0.1:17321"
+      }
+    },
+    "openrouter": {
+      "options": {
+        "headers": {
+          "sleev-provider": "openrouter",
+          "sleev-harness": "opencode"
+        },
+        "baseURL": "http://127.0.0.1:17321"
+      }
+    }
+  },
+
+  "mcp": {
+    // Give slow local servers (serena/LSP) room to start without blocking a hung one.
+    "timeout": { "startup": 45000 },
+    "servers": {
+      // Removidos daqui:
+      //   claude-mem -> aposentado por inteiro em 2026-10-13. O banco dele tinha
+      //                 0 observacoes (nunca capturou nada) e o Claude Code nao
+      //                 esta instalado. Dados arquivados em
+      //                 ~/.local/share/backups/claude-mem-aposentado-2026-10-13/.
+      //                 A memoria automatica no opencode vinha de um plugin
+      //                 (plugins/claude-mem.js), tambem arquivado.
+      //   typeui     -> MCP remoto de terceiros, nunca usado
+      // serena/context7/openwiki continuam porque aparecem no fluxo dos
+      // commands (AGENTS.md). Se quiser cortar mais tokens, é aqui que se mexe.
+      "context7": {
+        "type": "remote",
+        "url": "https://mcp.context7.com/mcp"
+      },
+      "serena": {
+        "type": "local",
+        "command": [
+          "serena",
+          "start-mcp-server",
+          "--context",
+          "ide",
+          "--project-from-cwd",
+          "--open-web-dashboard",
+          "false"
+        ]
+      },
+      "openwiki": {
+        "type": "local",
+        "command": ["openwiki", "mcp", "--host", "opencode"],
+        "enabled": true
+      }
+    }
+  }
+}

@@ -1,62 +1,115 @@
 #!/usr/bin/env bash
+# Publica as configuracoes compartilhadas de OpenCode e OMP deste checkout.
+#
+#   ./install.sh [--dry-run]
+#
+# Nunca toca em auth/state (auth.json, bancos, sessoes, contexts, caches).
+# Conflitos reais sao movidos para
+# ~/.local/state/ai-agent-config/backups/<timestamp>/ antes de virar link, e os
+# seeds mutaveis so sao copiados quando ainda nao existem no destino.
+
 set -euo pipefail
 
-# Instala a config compartilhada da equipe fazendo symlinks dos diretórios do
-# repo (agents, commands, skills) para ~/.config/opencode/. Assim o `git pull`
-# atualiza tudo automaticamente, sem copiar arquivos.
-#
-# Rode a partir de qualquer lugar:  bash ~/.config/opencode-sdd/install.sh
-# (ou clone o repo direto em ~/.config/opencode-sdd e rode de lá).
+REPO_ROOT=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd -P)
+DRY_RUN=0
+CONFIG_DIR="$HOME/.config/opencode"
+OMP_DIR="$HOME/.omp/agent"
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/ai-agent-config"
+BACKUP_DIR="$STATE_DIR/backups/$(date +%Y%m%dT%H%M%S)"
 
-REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONFIG_DIR="${OPENCODE_CONFIG_DIR:-$HOME/.config/opencode}"
+usage() {
+    cat <<'EOF'
+uso: ./install.sh [--dry-run]
 
-# Guarda: nunca apontar para o próprio repositório (evita auto-symlink destrutivo).
-if [ "$(cd "$CONFIG_DIR" 2>/dev/null && pwd -P)" = "$(cd "$REPO_DIR" && pwd -P)" ]; then
-  echo "ERRO: CONFIG_DIR resolve para o próprio repositório." >&2
-  echo "Rode: unset OPENCODE_CONFIG_DIR OPENCODE_CONFIG  e tente de novo." >&2
-  exit 1
-fi
+  --dry-run   mostra o que seria feito, sem criar diretorio, backup, copia ou link
+EOF
+}
 
-echo "Repositório : $REPO_DIR"
-echo "Config dir  : $CONFIG_DIR"
-echo
-
-mkdir -p "$CONFIG_DIR"
-
-# 1) Agents, commands e skills — symlink do diretório inteiro.
-for d in agents commands skills; do
-  src="$REPO_DIR/$d"
-  dst="$CONFIG_DIR/$d"
-  if [ -L "$dst" ]; then
-    echo "✓ $d já é symlink -> $(readlink "$dst")"
-  elif [ -e "$dst" ]; then
-    backup="$dst.bak.$(date +%Y%m%d%H%M%S)"
-    mv "$dst" "$backup"
-    echo "! $d já existia como pasta real; movido para $backup"
-    ln -sfn "$src" "$dst"
-    echo "✓ $dst -> $src"
-  else
-    ln -sfn "$src" "$dst"
-    echo "✓ $dst -> $src"
-  fi
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --dry-run) DRY_RUN=1 ;;
+        -h | --help)
+            usage
+            exit 0
+            ;;
+        *)
+            printf 'install: opcao desconhecida: %s\n' "$1" >&2
+            usage >&2
+            exit 2
+            ;;
+    esac
+    shift
 done
 
-# 2) Config (opencode.json / opencode.jsonc)
-echo
-if [ -f "$CONFIG_DIR/opencode.json" ] || [ -f "$CONFIG_DIR/opencode.jsonc" ]; then
-  echo "Você já tem um opencode.json/opencode.jsonc pessoal. Adicione manualmente"
-  echo "estas chaves (não sobrescrevi nada):"
-  echo
-  echo '  "plugin": ["superpowers@git+https://github.com/obra/superpowers.git"]'
-  echo '  "model": "opencode-go/deepseek-v4-pro"'
-  echo '  "small_model": "opencode-go/deepseek-v4.1-flash"'
-  echo
-  echo "As permissões do /context (se quiser) estão em $REPO_DIR/opencode.jsonc."
-else
-  cp "$REPO_DIR/opencode.jsonc" "$CONFIG_DIR/opencode.jsonc"
-  echo "✓ $CONFIG_DIR/opencode.jsonc criado a partir do da equipe"
-fi
+info() { printf '[install] %s\n' "$*"; }
+run() {
+    if [ "$DRY_RUN" = "1" ]; then
+        printf '+ %s\n' "$*"
+    else
+        "$@"
+    fi
+}
 
-echo
-echo "Concluído. Reinicie o OpenCode e valide com:  opencode debug agents"
+# shellcheck source=mapping.sh
+. "$REPO_ROOT/mapping.sh"
+
+ensure_dir() { [ -d "$1" ] || run mkdir -p "$1"; }
+
+backup_path() { # destino absoluto
+    local dst="$1" name
+    name=$(printf '%s' "${dst#"$HOME"/}" | tr '/' '-')
+    run mkdir -p "$BACKUP_DIR"
+    run mv "$dst" "$BACKUP_DIR/$name"
+    info "backup: $dst -> $BACKUP_DIR/$name"
+}
+
+link_target() { # origem destino
+    local src="$1" dst="$2" cur expect
+    if [ -L "$dst" ]; then
+        cur=$(readlink -f "$dst" 2>/dev/null || true)
+        expect=$(readlink -f "$src" 2>/dev/null || true)
+        if [ -n "$cur" ] && [ -n "$expect" ] && [ "$cur" = "$expect" ]; then
+            info "link ok: $dst"
+            return 0
+        fi
+    fi
+    if [ -e "$dst" ] || [ -L "$dst" ]; then
+        backup_path "$dst"
+    fi
+    ensure_dir "$(dirname "$dst")"
+    run ln -s "$src" "$dst"
+}
+
+install_seed() { # origem destino
+    local src="$1" dst="$2"
+    if [ -e "$dst" ] || [ -L "$dst" ]; then
+        info "seed preservado: $dst"
+        return 0
+    fi
+    if [ "$DRY_RUN" = "1" ]; then
+        printf '+ write %s (seed de %s)\n' "$dst" "$src"
+        return 0
+    fi
+    mkdir -p "$(dirname "$dst")"
+    # O placeholder ${HOME} cobre caminhos que so existem por maquina.
+    sed "s|\${HOME}|$HOME|g" "$src" >"$dst"
+    info "seed instalado: $dst"
+}
+
+ensure_dir "$CONFIG_DIR"
+ensure_dir "$CONFIG_DIR/plugins"
+ensure_dir "$OMP_DIR"
+
+for entry in "${link_sources[@]}"; do
+    link_target "$REPO_ROOT/${entry%%|*}" "${entry##*|}"
+done
+
+for entry in "${link_derived[@]}"; do
+    link_target "${entry%%|*}" "${entry##*|}"
+done
+
+for entry in "${seed_sources[@]}"; do
+    install_seed "$REPO_ROOT/${entry%%|*}" "${entry##*|}"
+done
+
+info "concluido; rode ./doctor.sh para conferir o resultado"
