@@ -12,7 +12,7 @@ set -uo pipefail
 REPO_ROOT=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd -P)
 CONFIG_DIR="$HOME/.config/opencode"
 OMP_DIR="$HOME/.omp/agent"
-EXPECTED_SKILLS=45
+EXPECTED_SKILLS=46
 EXPECTED_COMMANDS=20
 
 errors=0

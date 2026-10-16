@@ -51,7 +51,7 @@ opencode/            fonte unica de commands, skills, agents e config do OpenCod
   AGENTS.md          workflow global
   agents/reviewer.md
   commands/          20 comandos compartilhados
-  skills/            45 skills compartilhadas
+  skills/            46 skills compartilhadas
   skills-janitor/    engine dos skills janitor (scan, lint, security, swipe, mcp)
   plugins/adaptive-thinking.js
   cli.json           seed (Orca/herdr reescrevem)
@@ -87,8 +87,22 @@ procedencia registrada:
 | `anthropics/skills` | skill-creator |
 | `hermes-labs-ai/lintlang` | lintlang, lintlang-audit |
 | `muratcankoylan/Agent-Skills-for-Context-Engineering` | tool-design |
+| `Graphify-Labs/graphify` | graphify (skill gerada pelo proprio CLI, nao pelo `npx skills`) |
 
-Para atualizar do upstream e trazer para a fonte unica:
+O `graphify` nao vem do `npx skills`: o CLI e um pacote Python e a skill e escrita
+por ele direto na arvore canonica. Instalar/atualizar:
+
+```sh
+uv tool install "graphifyy[leiden]"      # CLI (PyPI graphifyy, com double-y)
+graphify install --platform opencode     # escreve em $CONFIG_DIR/skills/graphify
+uv tool upgrade graphifyy                # atualizar; depois repita o install
+```
+
+O guard do OMP (`graphify pi guard install` + `omp plugin install`) nao esta
+instalado de proposito: ele intercepta read/grep/find/bash e, com
+`GRAPHIFY_HOOK_STRICT=1`, nega leitura com grafo desatualizado.
+
+Para atualizar do upstream e trazer para a fonte unica (skills do `npx skills`):
 
 ```sh
 npx skills add <owner/repo> --skill <nome> -g -y -a opencode
