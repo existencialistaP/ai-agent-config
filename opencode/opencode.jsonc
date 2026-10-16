@@ -22,10 +22,12 @@
     { "action": "edit", "resource": "~/.config/opencode/contexts/*", "effect": "allow" },
     { "action": "external_directory", "resource": "~/.config/opencode/contexts/*", "effect": "allow" },
 
+    // Publicacao pede confirmacao explicita (ask), nunca silencio.
+    { "action": "shell", "resource": "git push *", "effect": "ask" },
+    { "action": "shell", "resource": "git -C * push *", "effect": "ask" },
+    { "action": "shell", "resource": "git * push *", "effect": "ask" },
+
     // Hard guardrails: irreversible / out-of-band actions are denied even with autoaccept.
-    { "action": "shell", "resource": "git push *", "effect": "deny" },
-    { "action": "shell", "resource": "git -C * push *", "effect": "deny" },
-    { "action": "shell", "resource": "git * push *", "effect": "deny" },
     { "action": "shell", "resource": "git reset --hard *", "effect": "deny" },
     { "action": "shell", "resource": "git clean *", "effect": "deny" },
     { "action": "shell", "resource": "rm -rf *", "effect": "deny" },
