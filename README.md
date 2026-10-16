@@ -123,6 +123,18 @@ Nao adotadas: `UiPath/coder_eval` (skill `check-skill`) depende do CLI
 `coder-eval` e dos templates `${CLAUDE_PLUGIN_ROOT}/reference/*`, que nao
 existem no diretorio da skill.
 
+## context-mode (roteamento de saida grande)
+
+O servidor MCP `context-mode` esta no `mcp.json` e o plugin grava seus hooks
+(`session_start`, `tool_result`, `session_before_compact`) em
+`~/.omp/context-mode/sessions/*.db`. O adapter do OMP nao registra hook de
+tool-call, entao as regras de roteamento sao a unica barreira: elas vivem em
+`omp/APPEND_SYSTEM.md` e o install.sh publica em `~/.omp/agent/APPEND_SYSTEM.md`
+(rota aditiva — so a sessao principal recebe; subagente nao herda).
+
+O `mcp.sh` do janitor conta tambem os eventos de hook, alem das chamadas MCP:
+para servidores assim, `0` na coluna Calls nao significa "nunca usado".
+
 ## Deliberadamente manual
 
 - Autenticacao de cada harness (`/login`) e do provider local.
