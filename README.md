@@ -123,6 +123,42 @@ Nao adotadas: `UiPath/coder_eval` (skill `check-skill`) depende do CLI
 `coder-eval` e dos templates `${CLAUDE_PLUGIN_ROOT}/reference/*`, que nao
 existem no diretorio da skill.
 
+## context-mode (roteamento de saida grande)
+
+O servidor MCP `context-mode` esta no `mcp.json` e o plugin grava seus hooks
+(`session_start`, `tool_result`, `session_before_compact`) em
+`~/.omp/context-mode/sessions/*.db`. O adapter do OMP nao registra hook de
+tool-call, entao as regras de roteamento sao a unica barreira: elas vivem em
+`omp/APPEND_SYSTEM.md` e o install.sh publica em `~/.omp/agent/APPEND_SYSTEM.md`
+(rota aditiva — so a sessao principal recebe; subagente nao herda).
+
+O `mcp.sh` do janitor conta tambem os eventos de hook, alem das chamadas MCP:
+para servidores assim, `0` na coluna Calls nao significa "nunca usado".
+
+## Guardrails de shell
+
+`omp/config.yml` (`bash.patterns`) e `opencode/opencode.jsonc` (`permissions`)
+mantem os mesmos limites, com uma excecao consciente:
+
+| Comando | omp | opencode |
+| --- | --- | --- |
+| `git push` | `prompt` | `ask` |
+| `git reset --hard`, `git clean` | deny | deny |
+| `rm -rf` / `rm -fr` / `rm -r -f` | deny | deny |
+| `sudo` | deny | deny |
+
+Push pede confirmacao a cada chamada (padrao `prompt` explicito nao entra no
+"always allow" da sessao); o resto segue negado mesmo com autoaccept/yolo.
+
+Por que nao existe bypass por skill/command: `deny` e `prompt` resolvem antes do
+`BashTool.execute()`, entao conteudo de prompt (skill, command, AGENTS.md) nao
+altera politica de ferramenta — so a config altera.
+
+Furo conhecido e aceito: `bash.patterns` nao cobre o tool `eval`, que declara o
+tier `exec` e pode spawnar `bash -c`, e `tools.approval` esta vazio. Um `eval`
+consegue, portanto, rodar comando que o bash nega. Fechar isso e
+`tools.approval.eval: prompt` (custo: todo eval passa a pedir aprovacao).
+
 ## Deliberadamente manual
 
 - Autenticacao de cada harness (`/login`) e do provider local.

@@ -71,6 +71,7 @@ python3 <<'PYEOF'
 import json
 import os
 import re
+import sqlite3
 import sys
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
@@ -187,6 +188,34 @@ if usage_tmp and os.path.isfile(usage_tmp):
                 if day > last_used.get(server, ""):
                     last_used[server] = day
 
+# Hook-based activity: a server that intercepts tool calls through harness hooks
+# never appears as an MCP tool call. context-mode records its own events under
+# the adapter's storage root, so count those separately instead of reporting a
+# working integration as unused.
+hook_activity = {}
+for _root in ("~/.omp/context-mode/sessions",
+              "~/.codex/context-mode/sessions",
+              "~/.pi/context-mode/sessions"):
+    _dir = os.path.expanduser(_root)
+    if not os.path.isdir(_dir):
+        continue
+    for _fn in sorted(os.listdir(_dir)):
+        if not _fn.endswith(".db"):
+            continue
+        _n = 0
+        try:
+            _con = sqlite3.connect(f"file:{os.path.join(_dir, _fn)}?mode=ro", uri=True)
+            for _tbl in ("session_events", "tool_calls"):
+                try:
+                    _n += _con.execute(f"SELECT COUNT(*) FROM {_tbl}").fetchone()[0]
+                except sqlite3.Error:
+                    pass
+            _con.close()
+        except sqlite3.Error:
+            continue
+        if _n:
+            hook_activity["context-mode"] = hook_activity.get("context-mode", 0) + _n
+
 # Transcript names may differ from config names (plugin MCP servers get
 # prefixed/namespaced). Match loosely: exact, else substring either way.
 def usage_for(cfg_name):
@@ -202,10 +231,14 @@ def usage_for(cfg_name):
 rows = []
 for s in servers.values():
     hit = usage_for(s["name"])
+    # Hook adapters are keyed by the configured server name, not by the
+    # transcript-derived name (a hook-only server has no transcript name).
+    hooks = hook_activity.get(s["name"], 0) or (hook_activity.get(hit, 0) if hit else 0)
     rows.append({
         **{k: v for k, v in s.items() if k != "scopes"},
         "scope": ",".join(sorted(s["scopes"])),
         "calls": calls.get(hit, 0),
+        "hook_activity": hooks,
         "distinct_tools_used": len(tools.get(hit, ())),
         "last_used": last_used.get(hit, "never"),
     })
@@ -226,7 +259,7 @@ if JSON_OUTPUT:
     print(json.dumps({
         "period_weeks": WEEKS,
         "configured": len(rows),
-        "unused": sum(1 for r in rows if r["calls"] == 0),
+        "unused": sum(1 for r in rows if r["calls"] == 0 and not r["hook_activity"]),
         "servers": rows,
         "transcript_only": orphans,
     }, indent=2))
@@ -244,7 +277,13 @@ print(f"  {'─'*28} {'─'*12} {'─'*6} {'─'*6} {'─'*11} {'─'*24}")
 for r in rows:
     print(f"  {r['name'][:28]:<28} {r['scope'][:12]:<12} {r['calls']:>6} {r['distinct_tools_used']:>6} {r['last_used']:<11} {r['origin'][:44]}")
 print()
-unused = [r for r in rows if r["calls"] == 0]
+hooked = [r for r in rows if r["hook_activity"]]
+for r in hooked:
+    print(f"  note: {r['name']} — {r['hook_activity']} hook events in the adapter storage "
+          f"(not MCP tool calls); a 0 in Calls is not 'unused' for these.")
+if hooked:
+    print()
+unused = [r for r in rows if r["calls"] == 0 and not r["hook_activity"]]
 if unused:
     print(f"--- Unused in {WEEKS} weeks ({len(unused)}) ---")
     for r in unused:

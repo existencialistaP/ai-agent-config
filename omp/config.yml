@@ -57,10 +57,10 @@ hideThinkingBlock: true
 bash:
   patterns:
     - match: git push *
-      approval: deny
+      approval: prompt
       reason: push exige ação explícita do usuário
     - match: git * push *
-      approval: deny
+      approval: prompt
       reason: push exige ação explícita do usuário
     - match: git reset --hard *
       approval: deny

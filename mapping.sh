@@ -16,6 +16,7 @@ link_sources=(
     "opencode/plugins/adaptive-thinking.js|$CONFIG_DIR/plugins/adaptive-thinking.js"
     "opencode/skills-janitor|$CONFIG_DIR/skills-janitor"
     "omp/AGENTS.md|$OMP_DIR/AGENTS.md"
+    "omp/APPEND_SYSTEM.md|$OMP_DIR/APPEND_SYSTEM.md"
     "omp/config.yml|$OMP_DIR/config.yml"
     "omp/mcp.json|$OMP_DIR/mcp.json"
     "omp/agents|$OMP_DIR/agents"
