@@ -34,7 +34,7 @@ setup() {
     [ "$(readlink "$HOME/.omp/agent/skills")" = "$HOME/.config/opencode/skills" ]
 
     [ "$(find -L "$HOME/.config/opencode/commands" -maxdepth 1 -type f | wc -l)" -eq 20 ]
-    [ "$(find -L "$HOME/.config/opencode/skills" -maxdepth 1 -mindepth 1 -type d | wc -l)" -eq 29 ]
+    [ "$(find -L "$HOME/.config/opencode/skills" -maxdepth 1 -mindepth 1 -type d | wc -l)" -eq "$(find -L "$REPO/opencode/skills" -maxdepth 1 -mindepth 1 -type d | wc -l)" ]
     [ ! -e "$HOME/.omp/agent/commands/context-update.md" ]
 }
 
@@ -111,7 +111,7 @@ setup() {
     run "$REPO/doctor.sh"
     [ "$status" -eq 0 ]
     [[ "$output" == *"0 erro(s)"* ]]
-    [[ "$output" == *"29"* ]]
+    [[ "$output" == *"skills compartilhados: $(find -L "$REPO/opencode/skills" -maxdepth 1 -mindepth 1 -type d | wc -l)"* ]]
     [[ "$output" == *"20"* ]]
 }
 
