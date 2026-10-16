@@ -14,6 +14,7 @@ link_sources=(
     "opencode/commands|$CONFIG_DIR/commands"
     "opencode/skills|$CONFIG_DIR/skills"
     "opencode/plugins/adaptive-thinking.js|$CONFIG_DIR/plugins/adaptive-thinking.js"
+    "opencode/skills-janitor|$CONFIG_DIR/skills-janitor"
     "omp/AGENTS.md|$OMP_DIR/AGENTS.md"
     "omp/config.yml|$OMP_DIR/config.yml"
     "omp/mcp.json|$OMP_DIR/mcp.json"

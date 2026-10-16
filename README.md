@@ -38,7 +38,7 @@ Previa sem efeito colateral:
 
 Confere executaveis (`opencode`, `omp`, `serena`, `openwiki`, `sleev`),
 resolucao de todos os links, ausencia de links quebrados, ausencia do caminho do
-home da maquina no que vai para o Git, presenca dos 29 skills e 20 commands
+home da maquina no que vai para o Git, presenca dos 45 skills e 20 commands
 compartilhados, o gateway do `sleev` em `127.0.0.1:17321` e a presenca opcional
 das integracoes geradas por Orca/herdr. Falta de auth, gateway ou integracao
 externa vira aviso com a instrucao manual; erro estrutural falha com exit 1.
@@ -51,7 +51,8 @@ opencode/            fonte unica de commands, skills, agents e config do OpenCod
   AGENTS.md          workflow global
   agents/reviewer.md
   commands/          20 comandos compartilhados
-  skills/            29 skills compartilhadas
+  skills/            45 skills compartilhadas
+  skills-janitor/    engine dos skills janitor (scan, lint, security, swipe, mcp)
   plugins/adaptive-thinking.js
   cli.json           seed (Orca/herdr reescrevem)
   tui.jsonc          seed (Orca/herdr reescrevem)
@@ -71,6 +72,42 @@ comando valido e `context.md`).
 
 O agente `code-reviewer.md` do OMP continua proprio porque a interface dele
 difere do `reviewer.md` do OpenCode.
+
+## Skills de terceiros
+
+17 das 45 skills vem de repositorios externos. O `npx skills add` grava em
+`~/.agents/skills` (estado nao versionado); aqui elas ficam na fonte unica com a
+procedencia registrada:
+
+| Origem | Skills |
+| --- | --- |
+| `khendzel/skills-janitor` | janitor-report, janitor-security, janitor-swipe, janitor-value |
+| `trailofbits/skills` | semgrep, codeql, sarif-parsing, sharp-edges, differential-review |
+| `hqhq1025/skill-optimizer` | skill-generalizer, skill-miner, skill-personalizer |
+| `anthropics/skills` | skill-creator |
+| `hermes-labs-ai/lintlang` | lintlang, lintlang-audit |
+| `muratcankoylan/Agent-Skills-for-Context-Engineering` | tool-design |
+
+Para atualizar do upstream e trazer para a fonte unica:
+
+```sh
+npx skills add <owner/repo> --skill <nome> -g -y -a opencode
+cp -r ~/.agents/skills/<nome> ~/.local/share/ai-agent-config/opencode/skills/
+rm -r ~/.agents/skills/<nome>
+```
+
+As skills `janitor-*` foram adaptadas para este ambiente: invocam o engine em
+`opencode/skills-janitor/` (publicado pelo install.sh em
+`~/.config/opencode/skills-janitor/`) e o engine le os fontes locais do OMP
+(`~/.omp/agent/sessions`, `~/.omp/agent/history.db`, `~/.omp/agent/mcp.json`).
+Um update do upstream por cima perde essas adaptacoes; porte o diff.
+
+O estado gerado pelo engine (usage-history, deck, changelog) fica em
+`~/.local/state/ai-agent-config/skills-janitor/`, fora do Git.
+
+Nao adotadas: `UiPath/coder_eval` (skill `check-skill`) depende do CLI
+`coder-eval` e dos templates `${CLAUDE_PLUGIN_ROOT}/reference/*`, que nao
+existem no diretorio da skill.
 
 ## Deliberadamente manual
 
