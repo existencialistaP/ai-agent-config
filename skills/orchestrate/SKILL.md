@@ -61,6 +61,10 @@ Rules for the contract:
 - **No verification duty.** The child edits and reports. The N0 runs gates, tests, and formatters after integration.
 - **Result contract.** The child writes `dispatch/<slice>-result.md` before replying, with what changed, what it could not do, and the evidence it collected.
 
+### Planning is not dispatched
+
+Spec-building runs on the N0, interactively, in the current session: the N0 asks the human one question at a time, presents each artifact section for approval, and uses `scout` children for read-only code research in parallel with the questions. No child ever receives spec-building work. Planning ends when the artifacts are written to files and `orchestration.md` carries status `planned` plus the next step — the handoff to the worker. The worker-N0 resumes cold from `tasks.md` + `orchestration.md` and never re-asks a decision already settled there; it pauses with options only when execution reveals new ambiguity.
+
 ## 3. Bounds
 
 Fan-out is a tree, not a mesh.
@@ -187,6 +191,8 @@ A fresh session resumes by reading exactly two files:
 2. `orchestration.md` — which slice belongs to whom, what is done, what is next.
 
 Then, for any slice in flight, read its `dispatch/<slice>.md` and `dispatch/<slice>-result.md`. Do not redo a slice whose result file exists and whose acceptance still holds; do not skip a slice whose result file is missing. Mark state in the files before dispatching again — a resume must never depend on remembered context.
+
+A worker-N0 resuming cold never re-asks a decision already recorded in `tasks.md` or `orchestration.md`; new ambiguity revealed by execution is the only reason to pause, and then with concrete options rather than a reopened planning conversation.
 
 ## 7. Adapters
 
