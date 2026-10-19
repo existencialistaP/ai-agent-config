@@ -35,6 +35,15 @@ BEFORE claiming any status or expressing satisfaction:
 Skip any step = lying, not verifying
 ```
 
+## Roles
+
+- **writer** — runs the verification commands for their own change before reporting completion
+- **reviewer** — independently re-runs the decisive check on a delegated slice before accepting the writer's report
+- **mechanical** — runs long or repetitive verification commands and returns raw output
+- **scout** — finds which command or check actually proves a claim when the project has no obvious one
+
+A claim from any role is evidence only when it carries the command output that produced it. `references/omp-tools.md`, `references/opencode-tools.md`, and `references/codex-tools.md` map the roles to your harness.
+
 ## Common Failures
 
 | Claim | Requires | Not Sufficient |
@@ -44,7 +53,7 @@ Skip any step = lying, not verifying
 | Build succeeds | Build command: exit 0 | Linter passing, logs look good |
 | Bug fixed | Test original symptom: passes | Code changed, assumed fixed |
 | Regression test works | Red-green cycle verified | Test passes once |
-| Agent completed | VCS diff shows changes | Agent reports "success" |
+| Delegated slice completed | VCS diff shows changes | The writer reports "success" |
 | Requirements met | Line-by-line checklist | Tests passing |
 
 ## Red Flags - STOP
@@ -52,7 +61,7 @@ Skip any step = lying, not verifying
 - Using "should", "probably", "seems to"
 - Expressing satisfaction before verification ("Great!", "Perfect!", "Done!", etc.)
 - About to commit/push/PR without verification
-- Trusting agent success reports
+- Trusting a writer's success report
 - Relying on partial verification
 - Thinking "just this once"
 - Tired and wanting work over
@@ -66,7 +75,7 @@ Skip any step = lying, not verifying
 | "I'm confident" | Confidence ≠ evidence |
 | "Just this once" | No exceptions |
 | "Linter passed" | Linter ≠ compiler |
-| "Agent said success" | Verify independently |
+| "The writer said success" | Verify independently |
 | "I'm tired" | Exhaustion ≠ excuse |
 | "Partial check is enough" | Partial proves nothing |
 | "Different words so rule doesn't apply" | Spirit over letter |
@@ -93,14 +102,14 @@ Skip any step = lying, not verifying
 
 **Requirements:**
 ```
-✅ Re-read plan → Create checklist → Verify each → Report gaps or completion
+✅ Re-read `openspec/changes/<name>/tasks.md` → Create checklist → Verify each → Report gaps or completion
 ❌ "Tests pass, phase complete"
 ```
 
-**Agent delegation:**
+**Delegated work:**
 ```
-✅ Agent reports success → Check VCS diff → Verify changes → Report actual state
-❌ Trust agent report
+✅ Writer reports success → Check VCS diff → Verify changes → Report actual state
+❌ Trust the writer's report
 ```
 
 ## When To Apply
@@ -111,7 +120,7 @@ Skip any step = lying, not verifying
 - ANY positive statement about work state
 - Committing, PR creation, task completion
 - Moving to next task
-- Delegating to agents
+- Delegating work to a writer
 
 **Rule applies to:**
 - Exact phrases

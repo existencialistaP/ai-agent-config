@@ -41,6 +41,15 @@ Use for ANY technical issue:
 - You're in a hurry (rushing guarantees rework)
 - Manager wants it fixed NOW (systematic is faster than thrashing)
 
+## Roles
+
+- **writer** — owns the investigation and the fix: reproduces, forms the hypothesis, writes the failing test, implements the change
+- **scout** — gathers evidence when the surface is wide: traces call stacks, reads reference implementations, maps recent changes
+- **reviewer** — challenges the root-cause story and the fix before the work is declared complete
+- **mechanical** — runs reproductions, log collection, and scripted diagnostics
+
+The writer normally runs this skill inline. Dispatch a scout for evidence gathering and a reviewer for the final check; `references/omp-tools.md`, `references/opencode-tools.md`, and `references/codex-tools.md` map the roles to your harness.
+
 ## The Four Phases
 
 You MUST complete each phase before proceeding to the next.
@@ -116,6 +125,7 @@ You MUST complete each phase before proceeding to the next.
    - What called this with bad value?
    - Keep tracing up until you find the source
    - Fix at source, not at symptom
+   - Dispatch a scout when the trace spans more files than one pass can hold; ask for the origin and the component boundary, not a fix
 
 ### Phase 2: Pattern Analysis
 
@@ -129,6 +139,7 @@ You MUST complete each phase before proceeding to the next.
    - If implementing pattern, read reference implementation COMPLETELY
    - Don't skim - read every line
    - Understand the pattern fully before applying
+   - Hand a large reference to a scout and ask for the full text plus its differences from the working code
 
 3. **Identify Differences**
    - What's different between working and broken?
@@ -174,7 +185,7 @@ You MUST complete each phase before proceeding to the next.
    - Automated test if possible
    - One-off test script if no framework
    - MUST have before fixing
-   - Use the `superpowers:test-driven-development` skill for writing proper failing tests
+   - Use the `test-driven-development` skill for writing proper failing tests
 
 2. **Implement Single Fix**
    - Address the root cause identified
@@ -186,7 +197,7 @@ You MUST complete each phase before proceeding to the next.
    - Test passes now?
    - No other tests broken?
    - Issue actually resolved?
-   - Use the `superpowers:verification-before-completion` skill before claiming success
+   - Use the `verification-before-completion` skill before claiming success
 
 4. **If Fix Doesn't Work**
    - STOP
@@ -268,7 +279,7 @@ If you catch yourself thinking:
 If systematic investigation reveals issue is truly environmental, timing-dependent, or external:
 
 1. You've completed the process
-2. Document what you investigated
+2. Document what you investigated in `openspec/changes/<name>/investigation.md` when the work belongs to a change
 3. Implement appropriate handling (retry, timeout, error message)
 4. Add monitoring/logging for future investigation
 

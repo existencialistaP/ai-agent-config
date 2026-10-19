@@ -28,6 +28,15 @@ Write the test first. Watch it fail. Write minimal code to pass.
 
 Thinking "skip TDD just this once"? Stop. That's rationalization.
 
+## Roles
+
+- **writer** — owns the red-green-refactor cycle: writes the failing test first, then the minimal production code
+- **scout** — locates existing patterns, test utilities, and framework conventions when the surface is unfamiliar
+- **reviewer** — checks that each test names a real break and asserts real behavior instead of mock behavior
+- **mechanical** — runs the suite and returns raw output when a run is long or repetitive
+
+The cycle normally runs inline in the writer's context. `references/omp-tools.md`, `references/opencode-tools.md`, and `references/codex-tools.md` map the roles to your harness.
+
 ## The Iron Law
 
 ```
@@ -294,6 +303,8 @@ Before marking work complete:
 - [ ] Edge cases and errors covered
 
 Can't check all boxes? You skipped TDD. Start over.
+
+A reviewer verifies the same checklist against the final diff; a missing box is a blocking finding, not a nitpick.
 
 ## When Stuck
 
