@@ -10,11 +10,15 @@
 link_sources=(
     "opencode/opencode.jsonc|$CONFIG_DIR/opencode.jsonc"
     "opencode/AGENTS.md|$CONFIG_DIR/AGENTS.md"
-    "opencode/agents|$CONFIG_DIR/agents"
     "opencode/commands|$CONFIG_DIR/commands"
+    # skills/ e a arvore canonica; opencode/skills e um symlink para ../skills,
+    # entao esta entrada mantem o destino ja publicado resolvendo para ela.
     "opencode/skills|$CONFIG_DIR/skills"
+    "skills|$CONFIG_DIR/skills"
+    "skills|$HOME/.codex/skills"
     "opencode/plugins/adaptive-thinking.js|$CONFIG_DIR/plugins/adaptive-thinking.js"
     "opencode/skills-janitor|$CONFIG_DIR/skills-janitor"
+    "opencode/agents|$CONFIG_DIR/agents"
     "omp/AGENTS.md|$OMP_DIR/AGENTS.md"
     "omp/APPEND_SYSTEM.md|$OMP_DIR/APPEND_SYSTEM.md"
     "omp/config.yml|$OMP_DIR/config.yml"

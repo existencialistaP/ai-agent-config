@@ -17,6 +17,8 @@ O `install.sh`:
 - cria `~/.config/opencode` e `~/.omp/agent`;
 - liga (symlink) `opencode.jsonc`, `AGENTS.md`, `agents/`, `commands/`,
   `skills/` e `plugins/adaptive-thinking.js` do repositorio para o OpenCode;
+- liga a arvore canonica `skills/` em `~/.codex/skills`; `opencode/skills` e um
+  symlink interno para `../skills`, entao o destino publicado nao muda;
 - liga `~/.omp/agent/{AGENTS.md,config.yml,mcp.json,agents}` no OMP;
 - liga `~/.omp/agent/{commands,skills}` -> `~/.config/opencode/{commands,skills}`
   (segunda ordem: o OMP consome o que o OpenCode ja publica);
@@ -38,20 +40,27 @@ Previa sem efeito colateral:
 
 Confere executaveis (`opencode`, `omp`, `serena`, `openwiki`, `sleev`),
 resolucao de todos os links, ausencia de links quebrados, ausencia do caminho do
-home da maquina no que vai para o Git, presenca dos 45 skills e 20 commands
-compartilhados, o gateway do `sleev` em `127.0.0.1:17321` e a presenca opcional
-das integracoes geradas por Orca/herdr. Falta de auth, gateway ou integracao
-externa vira aviso com a instrucao manual; erro estrutural falha com exit 1.
+home da maquina no que vai para o Git, presenca dos skills compartilhados
+(contagem derivada de `skills/`), 20 commands, os 5 role agents canonicos, o
+alvo `~/.codex/skills`, o gateway do `sleev` em `127.0.0.1:17321` e a presenca
+opcional das integracoes geradas por Orca/herdr. Falta de auth, gateway ou
+integracao externa vira aviso com a instrucao manual; erro estrutural falha com
+exit 1.
 
 ## Estrutura
 
 ```
-opencode/            fonte unica de commands, skills, agents e config do OpenCode
+skills/              fonte canonica das skills compartilhadas (46)
+  <skill>/SKILL.md
+  <skill>/references/{omp,opencode,codex}-tools.md
+agents/              arvore canonica dos role agents (scout, writer, reviewer, mechanic, orchestrator);
+                     a publicacao unificada substitui opencode/agents e omp/agents na fase 4.4
+opencode/            config do harness OpenCode
   opencode.jsonc     modelos, permissoes, providers e MCPs
   AGENTS.md          workflow global
+  skills -> ../skills    symlink para a arvore canonica
   agents/reviewer.md
   commands/          20 comandos compartilhados
-  skills/            46 skills compartilhadas
   skills-janitor/    engine dos skills janitor (scan, lint, security, swipe, mcp)
   plugins/adaptive-thinking.js
   cli.json           seed (Orca/herdr reescrevem)
@@ -66,16 +75,23 @@ omp/
 mapping.sh           mapa origem->destino usado por install.sh e doctor.sh
 ```
 
-`opencode/commands` e `opencode/skills` sao a unica fonte: o OMP aponta para o
-que o OpenCode publica, e a excecao orfa `context-update.md` foi removida (o
-comando valido e `context.md`).
+`skills/` e a fonte unica das skills: `opencode/skills` e um symlink interno
+para `../skills`, o `~/.codex/skills` recebe a mesma arvore e o OMP continua
+apontando para o que o OpenCode publica. `opencode/commands` segue como fonte
+unica dos comandos, e a excecao orfa `context-update.md` foi removida (o comando
+valido e `context.md`).
+
+Nota para colaboradores: `opencode/skills` deixou de ser diretorio e virou
+symlink para `../skills`; num checkout antigo o `git pull` registra a troca e o
+`install.sh` move o link/diretorio publicado para o backup antes de recriar.
+Edite skills em `skills/`, nunca em `opencode/skills`.
 
 O agente `code-reviewer.md` do OMP continua proprio porque a interface dele
 difere do `reviewer.md` do OpenCode.
 
 ## Skills de terceiros
 
-17 das 45 skills vem de repositorios externos. O `npx skills add` grava em
+17 das 46 skills vem de repositorios externos. O `npx skills add` grava em
 `~/.agents/skills` (estado nao versionado); aqui elas ficam na fonte unica com a
 procedencia registrada:
 
@@ -94,7 +110,7 @@ por ele direto na arvore canonica. Instalar/atualizar:
 
 ```sh
 uv tool install "graphifyy[leiden]"      # CLI (PyPI graphifyy, com double-y)
-graphify install --platform opencode     # escreve em $CONFIG_DIR/skills/graphify
+graphify install --platform opencode     # escreve em $CONFIG_DIR/skills/graphify (link -> skills/graphify)
 uv tool upgrade graphifyy                # atualizar; depois repita o install
 ```
 
@@ -106,7 +122,7 @@ Para atualizar do upstream e trazer para a fonte unica (skills do `npx skills`):
 
 ```sh
 npx skills add <owner/repo> --skill <nome> -g -y -a opencode
-cp -r ~/.agents/skills/<nome> ~/.local/share/ai-agent-config/opencode/skills/
+cp -r ~/.agents/skills/<nome> ~/.local/share/ai-agent-config/skills/
 rm -r ~/.agents/skills/<nome>
 ```
 
