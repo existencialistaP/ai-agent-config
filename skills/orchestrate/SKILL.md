@@ -65,6 +65,18 @@ Rules for the contract:
 
 Spec-building runs on the N0, interactively, in the current session: the N0 asks the human one question at a time, presents each artifact section for approval, and uses `scout` children for read-only code research in parallel with the questions. No child ever receives spec-building work. Planning ends when the artifacts are written to files and `orchestration.md` carries status `planned` plus the next step — the handoff to the worker. The worker-N0 resumes cold from `tasks.md` + `orchestration.md` and never re-asks a decision already settled there; it pauses with options only when execution reveals new ambiguity.
 
+Planning also has a `--direct` mode: classify the request in one sentence (spike/bounded/architectural), confirm the scope in one line, and proceed after that single ok writing the artifacts with no question rounds. Either mode may cover one or N tasks/slices, and each one gets its own `queued` line in `queue.md`.
+
+### End-of-planning offer
+
+Planning finishes with the artifacts written, `orchestration.md` at status `planned`, and the queue filled. Then make exactly one offer with three options:
+
+1. Open a worker in a new Herdr pane.
+2. Execute here in this session.
+3. Leave it in the queue.
+
+Default is 3. Never auto-start a worker and never open a Herdr pane without an explicit "yes"; option 1 still goes through the guard in section 4.
+
 ## 3. Bounds
 
 Fan-out is a tree, not a mesh.
@@ -173,6 +185,7 @@ State lives in files inside the change being executed, not in the conversation. 
 | `orchestration.md` | N0 | Slice to owner, status, checkpoint, next step, created pane IDs |
 | `dispatch/<slice>.md` | N0 | The contract the worker reads |
 | `dispatch/<slice>-result.md` | Worker | What changed, evidence, what remains — written **before** the worker replies |
+| `queue.md` | Planning writes, worker picks up | Slice backlog and its pickup state |
 
 `orchestration.md` row shape:
 
@@ -183,12 +196,29 @@ State lives in files inside the change being executed, not in the conversation. 
 | docs-sync | writer/docs | blocked | needs scope decision | ask human |
 ```
 
+### Queue
+
+`queue.md` lives in the change (or at the repo root when there is no change directory) and carries the handoff from planning to execution:
+
+```markdown
+| Slice | Source | Status | Next |
+|---|---|---|---|
+| parser-fix | tospec --direct | queued | pickup |
+| docs-sync | opsx-propose | doing | review |
+```
+
+- Columns are `slice`, `source`, `status` (`queued` / `doing` / `done` / `blocked`), and `next`.
+- Planning writes `queued` lines — in either mode, one line per task/slice, any count.
+- The worker picks up by transitioning `queued` → `doing` → `done` (or `blocked`) at the start of its turn. Pickup is event-driven: no polling, no daemon.
+- Resume reads `tasks.md` + `orchestration.md` + `queue.md`; a slice already `doing` or `done` is not picked up again.
+
 ### Resume
 
-A fresh session resumes by reading exactly two files:
+A fresh session resumes by reading exactly three files:
 
 1. `tasks.md` — which steps are checked.
 2. `orchestration.md` — which slice belongs to whom, what is done, what is next.
+3. `queue.md` — which slices are still queued, in flight, or blocked.
 
 Then, for any slice in flight, read its `dispatch/<slice>.md` and `dispatch/<slice>-result.md`. Do not redo a slice whose result file exists and whose acceptance still holds; do not skip a slice whose result file is missing. Mark state in the files before dispatching again — a resume must never depend on remembered context.
 
