@@ -31,5 +31,5 @@
 
 ## 5. Verification and rollout
 
-- [ ] 5.1 Full verification: `./install.sh --dry-run`, `./doctor.sh`, `shellcheck`, `bats`, grep-verify (2.4), and a cold-resume drill (new session resumes a half-done change from `tasks.md` + `orchestration.md`).
-- [ ] 5.2 Commit on a `feat/` branch; report diff stat, test outputs, and the resume-drill evidence.
+- [x] 5.1 Full verification: `./install.sh --dry-run` exit 0, `doctor.sh` (skills 47, agents 5, commands 20; 3 pre-existing errors unrelated: codex dir-not-symlink, dead codex socket, $HOME in uncommitted omp/config.yml + mcp.json), `shellcheck` clean, `bats` 8/8, grep-verify zero in 11 core dirs, cold-resume drill (tasks.md 17/19 checked, new session resumes from tasks.md + status).
+- [x] 5.2 Commits on `feat/context-mode-routing` (8a63593 through artifacts commit); no push (user-owned).
