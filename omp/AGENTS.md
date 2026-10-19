@@ -20,5 +20,5 @@ Papéis `scout`/`writer`/`reviewer`/`mechanic` vivem em `agents/`; a skill `orch
 ## Guardrails
 - OpenSpec é a única fonte de verdade; não crie outro spec/plano.
 - Sem afirmar sucesso sem evidência de verificação recente.
-- Git: código vai para branch nova com prefixo (`feat/`, `fix/`) + commit. O `push` fica sob `deny` em `bash.patterns` (sob `yolo`, `prompt` não segura push), então eu preparo branch, corpo do PR e o comando exato — o push e o PR são seus.
+- Git: código vai para branch nova com prefixo (`feat/`, `fix/`) + commit. O `push` fica sob `prompt` em `bash.patterns`, então eu preparo branch, corpo do PR e o comando exato — o push e o PR são seus.
 - Com `yolo` ligado eu não peço aprovação de ferramenta, mas ainda **peço antes** de: instalar dependência, deletar arquivo que não criei, mudar contrato público (API/schema/migração), push/PR.
