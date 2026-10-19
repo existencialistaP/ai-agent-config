@@ -1,18 +1,18 @@
 # Spec Document Reviewer Prompt Template
 
-Use this template when dispatching a spec document reviewer subagent.
+Use this template when dispatching a `reviewer` to inspect the spec document.
 
 **Purpose:** Verify the spec is complete, consistent, and ready for implementation planning.
 
-**Dispatch after:** Spec document is written to docs/superpowers/specs/
+**Dispatch after:** Spec document is written to `openspec/changes/<name>/design.md`
 
 ```
-Subagent (general-purpose):
+reviewer:
   description: "Review spec document"
   prompt: |
     You are a spec document reviewer. Verify this spec is complete and ready for planning.
 
-    **Spec to review:** [SPEC_FILE_PATH]
+    **Spec to review:** [SPEC_FILE_PATH] (default: `openspec/changes/<name>/design.md`)
 
     ## What to Check
 

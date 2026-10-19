@@ -7,7 +7,7 @@ description: Use when facing 2+ independent tasks that can be worked on without 
 
 ## Overview
 
-You delegate tasks to specialized agents with isolated context. By precisely crafting their instructions and context, you ensure they stay focused and succeed at their task. They should never inherit your session's context or history — you construct exactly what they need. This also preserves your own context for coordination work.
+You delegate tasks to role-scoped agents with isolated context. By precisely crafting their instructions and context, you ensure they stay focused and succeed at their task. They should never inherit your session's context or history — you construct exactly what they need. This also preserves your own context for coordination work.
 
 When you have multiple unrelated failures (different test files, different subsystems, different bugs), investigating them sequentially wastes time. Each investigation is independent and can happen in parallel.
 
@@ -44,6 +44,14 @@ digraph when_to_use {
 - Need to understand full system state
 - Agents would interfere with each other
 
+## Choose the Transport
+
+Pick the lightest transport that covers the lifetime of the work.
+
+- **Ephemeral batch** — default. Harness-native dispatch in one batch for work that finishes in minutes, returns a summary, and edits the working tree. Cap at 3-5 units; one `writer` per file.
+- **Durable / observable** — when work is long-lived, needs TTY observation, or ownership changes hands. Use Herdr panes when `HERDR_ENV=1` (named agents, `--no-focus` splits, never close panes you did not create). An Orca workspace is opt-in, never the default.
+- **Handoff** — when a different session or owner continues the work; write the state to files before handing off.
+
 ## The Pattern
 
 ### 1. Identify Independent Domains
@@ -57,30 +65,35 @@ Each domain is independent - fixing tool approval doesn't affect abort tests.
 
 ### 2. Create Focused Agent Tasks
 
-Each agent gets:
+Each dispatch gets a role, a scope, and an output contract:
+- **Role:** `writer` when the work edits code; `scout` for read-only root-cause investigation when the cause is not yet known.
 - **Specific scope:** One test file or subsystem
-- **Clear goal:** Make these tests pass
+- **Clear goal:** Make these tests pass, or report the root cause
 - **Constraints:** Don't change other code
 - **Expected output:** Summary of what you found and fixed
 
 ### 3. Dispatch in Parallel
 
-Issue all three subagent dispatches in the same response — they run in parallel:
+Issue all dispatches in one batch — they run concurrently:
 
 ```text
-Subagent (general-purpose): "Fix agent-tool-abort.test.ts failures"
-Subagent (general-purpose): "Fix batch-completion-behavior.test.ts failures"
-Subagent (general-purpose): "Fix tool-approval-race-conditions.test.ts failures"
-# All three run concurrently.
+writer: "Fix agent-tool-abort.test.ts failures"
+writer: "Fix batch-completion-behavior.test.ts failures"
+writer: "Fix tool-approval-race-conditions.test.ts failures"
+# All three dispatches issued together run concurrently.
 ```
 
-Multiple dispatch calls in one response = parallel execution. One per response = sequential.
+Issue every dispatch in one response/batch. A dispatch issued alone, then another later, runs sequentially. If the cause is not yet known, send `scout` dispatches first and convert their findings into `writer` slices.
+
+Concrete primitives for "one batch" differ per harness; see `references/`.
 
 ### 4. Review and Integrate
 
-When agents return:
+When the writers return:
 - Read each summary
 - Verify fixes don't conflict
+- Dispatch a `reviewer` over the union of their diffs before integrating
+- Route mechanical follow-ups (renames, fixture updates, log collection) to `mechanical`
 - Run full test suite
 - Integrate all changes
 
@@ -90,6 +103,8 @@ Good agent prompts are:
 1. **Focused** - One clear problem domain
 2. **Self-contained** - All context needed to understand the problem
 3. **Specific about output** - What should the agent return?
+
+Each dispatched `writer` or `scout` gets its scope, constraints, and expected output stated in the prompt; nothing is inherited from your session.
 
 ```markdown
 Fix the 3 failing tests in src/agents/agent-tool-abort.test.ts:
@@ -144,17 +159,18 @@ Return: Summary of what you found and what you fixed.
 
 **Decision:** Independent domains - abort logic separate from batch completion separate from race conditions
 
-**Dispatch:**
-```
-Agent 1 → Fix agent-tool-abort.test.ts
-Agent 2 → Fix batch-completion-behavior.test.ts
-Agent 3 → Fix tool-approval-race-conditions.test.ts
+**Dispatch (one batch, three writers):**
+```text
+writer: "Fix agent-tool-abort.test.ts failures"
+writer: "Fix batch-completion-behavior.test.ts failures"
+writer: "Fix tool-approval-race-conditions.test.ts failures"
+# All three dispatches issued together run concurrently.
 ```
 
 **Results:**
-- Agent 1: Replaced timeouts with event-based waiting
-- Agent 2: Fixed event structure bug (threadId in wrong place)
-- Agent 3: Added wait for async tool execution to complete
+- Writer 1: Replaced timeouts with event-based waiting
+- Writer 2: Fixed event structure bug (threadId in wrong place)
+- Writer 3: Added wait for async tool execution to complete
 
 **Integration:** All fixes independent, no conflicts, full suite green
 
@@ -165,3 +181,7 @@ After agents return:
 2. **Check for conflicts** - Did agents edit same code?
 3. **Run full suite** - Verify all fixes work together
 4. **Spot check** - Agents can make systematic errors
+
+## Harness Adapters
+
+Role names in this skill resolve to concrete primitives per harness. See the `references/` directory for the adapter that matches your environment.
