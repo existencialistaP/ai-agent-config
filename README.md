@@ -15,12 +15,15 @@ git clone https://github.com/existencialistaP/ai-agent-config.git ~/.local/share
 O `install.sh`:
 
 - cria `~/.config/opencode` e `~/.omp/agent`;
-- liga (symlink) `opencode.jsonc`, `AGENTS.md`, `agents/`, `commands/`,
-  `skills/` e `plugins/adaptive-thinking.js` do repositorio para o OpenCode;
+- liga (symlink) `opencode.jsonc`, `AGENTS.md`, `commands/`, `skills/` e
+  `plugins/adaptive-thinking.js` do repositorio para o OpenCode;
 - liga a arvore canonica `skills/` em `~/.codex/skills`; `opencode/skills` e um
   symlink interno para `../skills`, entao o destino publicado nao muda;
-- liga `~/.omp/agent/{AGENTS.md,config.yml,mcp.json,agents}` no OMP;
-- liga `~/.omp/agent/{commands,skills}` -> `~/.config/opencode/{commands,skills}`
+- liga a arvore canonica `agents/` em `~/.config/opencode/agents`;
+  `opencode/agents` e um symlink interno para `../agents`;
+- liga `~/.omp/agent/{AGENTS.md,config.yml,mcp.json}` no OMP;
+- liga `~/.omp/agent/{commands,skills,agents}` ->
+  `~/.config/opencode/{commands,skills,agents}`
   (segunda ordem: o OMP consome o que o OpenCode ja publica);
 - copia os seeds mutaveis (`cli.json`, `tui.jsonc`, `omp-plugins.lock.json`,
   `marketplaces.json`) **somente** se ainda nao existirem no destino;
@@ -53,13 +56,12 @@ exit 1.
 skills/              fonte canonica das skills compartilhadas (46)
   <skill>/SKILL.md
   <skill>/references/{omp,opencode,codex}-tools.md
-agents/              arvore canonica dos role agents (scout, writer, reviewer, mechanic, orchestrator);
-                     a publicacao unificada substitui opencode/agents e omp/agents na fase 4.4
+agents/              arvore canonica dos role agents (scout, writer, reviewer, mechanic, orchestrator)
 opencode/            config do harness OpenCode
   opencode.jsonc     modelos, permissoes, providers e MCPs
   AGENTS.md          workflow global
   skills -> ../skills    symlink para a arvore canonica
-  agents/reviewer.md
+  agents -> ../agents    symlink para a arvore canonica
   commands/          20 comandos compartilhados
   skills-janitor/    engine dos skills janitor (scan, lint, security, swipe, mcp)
   plugins/adaptive-thinking.js
@@ -69,7 +71,6 @@ omp/
   AGENTS.md          workflow global do OMP
   config.yml         modelos, presets, temas e guardrails de shell
   mcp.json           MCPs do OMP (serena via PATH)
-  agents/code-reviewer.md
   plugins/omp-plugins.lock.json   declaracao de i-have-adhd@0.4.1
   marketplaces.json               seed; ${HOME} e resolvido na copia
 mapping.sh           mapa origem->destino usado por install.sh e doctor.sh
@@ -77,17 +78,19 @@ mapping.sh           mapa origem->destino usado por install.sh e doctor.sh
 
 `skills/` e a fonte unica das skills: `opencode/skills` e um symlink interno
 para `../skills`, o `~/.codex/skills` recebe a mesma arvore e o OMP continua
-apontando para o que o OpenCode publica. `opencode/commands` segue como fonte
-unica dos comandos, e a excecao orfa `context-update.md` foi removida (o comando
-valido e `context.md`).
+apontando para o que o OpenCode publica. `agents/` segue o mesmo desenho:
+`opencode/agents` e um symlink interno para `../agents`, o
+`~/.config/opencode/agents` publica a arvore canonica e
+`~/.omp/agent/agents` deriva dela (segunda ordem). Os 5 role agents sao os
+mesmos nos dois harnesses. `opencode/commands` segue como fonte unica dos
+comandos, e a excecao orfa `context-update.md` foi removida (o comando valido e
+`context.md`).
 
-Nota para colaboradores: `opencode/skills` deixou de ser diretorio e virou
-symlink para `../skills`; num checkout antigo o `git pull` registra a troca e o
-`install.sh` move o link/diretorio publicado para o backup antes de recriar.
-Edite skills em `skills/`, nunca em `opencode/skills`.
-
-O agente `code-reviewer.md` do OMP continua proprio porque a interface dele
-difere do `reviewer.md` do OpenCode.
+Nota para colaboradores: `opencode/skills` e `opencode/agents` deixaram de ser
+diretorios e viraram symlinks para `../skills` e `../agents`; num checkout antigo
+o `git pull` registra a troca e o `install.sh` move o link/diretorio publicado
+para o backup antes de recriar. Edite skills em `skills/` e agents em `agents/`,
+nunca nos caminhos internos do OpenCode.
 
 ## Skills de terceiros
 

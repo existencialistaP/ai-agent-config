@@ -72,6 +72,18 @@ else
     err "skills do codex ausente ou divergente: $codex_skills"
 fi
 
+# agents/ e a fonte unica dos role agents; os dois harnesses so a enxergam por
+# link, entao o alvo tem que resolver para a arvore canonica do repositorio.
+agents_canonical=$(readlink -f "$REPO_ROOT/agents" 2>/dev/null || true)
+if [ -L "$CONFIG_DIR/agents" ] && [ -L "$OMP_DIR/agents" ] &&
+    [ -n "$agents_canonical" ] &&
+    [ "$(readlink -f "$CONFIG_DIR/agents" 2>/dev/null)" = "$agents_canonical" ] &&
+    [ "$(readlink -f "$OMP_DIR/agents" 2>/dev/null)" = "$agents_canonical" ]; then
+    ok "agents canonicos: $CONFIG_DIR/agents e $OMP_DIR/agents"
+else
+    err "agents fora da arvore canonica: $CONFIG_DIR/agents, $OMP_DIR/agents (esperado $agents_canonical)"
+fi
+
 broken=$(find "$CONFIG_DIR" "$OMP_DIR" "$HOME/.codex" -xtype l 2>/dev/null | tr '\n' ' ' || true)
 if [ -n "$broken" ]; then
     err "links quebrados: $broken"
