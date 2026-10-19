@@ -1,15 +1,15 @@
 ---
 name: using-git-worktrees
-description: Use when starting feature work that needs isolation from current workspace or before executing implementation plans - ensures an isolated workspace exists via native tools or git worktree fallback
+description: Use when starting feature work that needs isolation from current workspace or before executing implementation plans - ensures an isolated workspace exists via native tools, Herdr, or git worktree fallback
 ---
 
 # Using Git Worktrees
 
 ## Overview
 
-Ensure work happens in an isolated workspace. Prefer your platform's native worktree tools. Fall back to manual git worktrees only when no native tool is available.
+Ensure work happens in an isolated workspace. Prefer a native worktree tool. When the session is Herdr-managed, use Herdr's worktree support. Fall back to manual git worktrees only when neither applies.
 
-**Core principle:** Detect existing isolation first. Then use native tools. Then fall back to git. Never fight the harness.
+**Core principle:** Detect existing isolation first. Then native tools. Then Herdr. Then git. Never fight the harness.
 
 **Announce at start:** "I'm using the using-git-worktrees skill to set up an isolated workspace."
 
@@ -46,7 +46,7 @@ Honor any existing declared preference without asking. If the user declines cons
 
 ## Step 1: Create Isolated Workspace
 
-**You have two mechanisms. Try them in this order.**
+**You have three mechanisms. Try them in this order.**
 
 ### 1a. Native Worktree Tools (preferred)
 
@@ -56,9 +56,26 @@ Native tools handle directory placement, branch creation, and cleanup automatica
 
 Only proceed to Step 1b if you have no native worktree tool available.
 
-### 1b. Git Worktree Fallback
+### 1b. Herdr Worktree (opt-in, only inside Herdr)
 
-**Only use this if Step 1a does not apply** — you have no native worktree tool available. Create a worktree manually using git.
+Use this when, and only when, both conditions hold:
+
+- `HERDR_ENV=1` — the session is managed by Herdr.
+- `herdr` is on `PATH` — `command -v herdr` succeeds.
+
+Then create and enter the worktree through Herdr instead of raw git, so Herdr tracks the workspace, its branch, and its cleanup:
+
+```bash
+herdr worktree create --branch "$BRANCH_NAME" --no-focus
+```
+
+**Do not steal focus:** always pass `--no-focus` (and `--no-focus` on `herdr worktree open`) so the new workspace opens without yanking the user's current view or terminal.
+
+If `HERDR_ENV` is unset, or the CLI is missing, or `herdr worktree create` fails, skip to Step 1c. Do not install Herdr and do not invent a Herdr-specific path.
+
+### 1c. Manual Git Worktree Fallback
+
+**Only use this if Step 1a and Step 1b do not apply.** Create a worktree manually using git.
 
 #### Directory Selection
 
@@ -146,7 +163,8 @@ Ready to implement <feature-name>
 | Already in linked worktree | Skip creation (Step 0) |
 | In a submodule | Treat as normal repo (Step 0 guard) |
 | Native worktree tool available | Use it (Step 1a) |
-| No native tool | Git worktree fallback (Step 1b) |
+| `HERDR_ENV=1` and `herdr` CLI available | Create through Herdr with `--no-focus` (Step 1b) |
+| No native tool, no Herdr | Git worktree fallback (Step 1c) |
 | `.worktrees/` exists | Use it (verify ignored) |
 | `worktrees/` exists | Use it (verify ignored) |
 | Both exist | Use `.worktrees/` |
@@ -162,6 +180,7 @@ Ready to implement <feature-name>
 |--------|---------|
 | "I'm obviously not in a worktree — no need to check" | Run Step 0. Harness-created isolation and submodules both fool eyeballing; the detection commands settle it. |
 | "`git worktree add` is quicker than hunting for a native tool" | A native tool (e.g. `EnterWorktree`) owns placement, branching, and cleanup. Bypassing it is the #1 mistake — it creates phantom state your harness can't see or manage. |
+| "Herdr is installed, so I'll always use it" | Step 1b requires `HERDR_ENV=1` as well. Outside a Herdr session the CLI would create state the current session can't manage; fall through to Step 1c. |
 | "The worktree directory is surely ignored already" | Run `git check-ignore`. An unignored worktree directory commits the whole tree into the repo. |
 | "Any directory name works" | Explicit instructions beat an existing project-local directory, which beats the `.worktrees/` default. |
-| "The workspace is fresh — baseline tests can wait" | A dirty baseline makes every later failure ambiguous. Run the tests now; proceeding past failures is your human partner's call. |
+| "The workspace is fresh — baseline tests can wait" | A dirty baseline makes every later failure ambiguous. Run the tests now; proceeding past failures is the user's call. |
