@@ -13,8 +13,10 @@ $ARGUMENTS
 - Do **not** implement anything, fix anything, or create files. Do not turn the investigation
   into work.
 - Never modify application files. Only read, search, and explore.
-- For broad exploration, dispatch the read-only `explore` subagent (thoroughness: quick /
-  medium / very thorough) instead of exploring inline; draw the conclusions yourself here.
+- For broad exploration, load the **orchestrate** skill and follow it for slicing and
+  transport decisions (direct / task batch / Herdr / handoff): the `explore` role resolves
+  to read-only `scout` agents dispatched in parallel (thoroughness: quick / medium / very
+  thorough) instead of exploring inline. Draw the conclusions yourself here.
 
 ## Workflow
 
