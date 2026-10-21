@@ -6,6 +6,10 @@ Carregue as skills `openspec-verify-change` e `verification-before-completion`
 (skill tool) e siga-as exatamente, tratando o texto abaixo como o nome do change
 ou argumentos.
 
+Use a skill `orchestrate` (skill tool) para as decisões de fatiamento e transporte
+(direct / task batch / Herdr / handoff) quando a verificação se dividir em slices
+independentes; uma slice única é verificada diretamente.
+
 $ARGUMENTS
 
 ## Checklist:

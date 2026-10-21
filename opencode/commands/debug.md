@@ -9,6 +9,10 @@ $ARGUMENTS
 Use the **systematic-debugging** skill (load it). Follow the Iron Law: **no fixes without root
 cause investigation first**.
 
+Before splitting the work, load the **orchestrate** skill and follow it for slicing and
+transport decisions (direct / task batch / Herdr / handoff): one failure per slice, one
+`scout` or `writer` per slice, independent failures dispatched as one parallel batch.
+
 1. Reproduce the bug reliably; capture the exact failure (error, second-level, exact command).
 2. Read the relevant code, tests and logs; form hypotheses; test them cheaply; find the root
    cause. If a project context map exists at `~/.config/opencode/contexts/<project>.md`, read it

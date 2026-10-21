@@ -12,8 +12,8 @@ set -uo pipefail
 REPO_ROOT=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd -P)
 CONFIG_DIR="$HOME/.config/opencode"
 OMP_DIR="$HOME/.omp/agent"
-EXPECTED_SKILLS=29
 EXPECTED_COMMANDS=20
+EXPECTED_AGENTS=5
 
 errors=0
 warnings=0
@@ -53,7 +53,11 @@ check_link() { # esperado destino
     fi
 }
 
+codex_skills="$HOME/.codex/skills"
+
 for entry in "${link_sources[@]}"; do
+    # O alvo do codex tem check proprio abaixo.
+    [ "${entry##*|}" = "$codex_skills" ] && continue
     check_link "$REPO_ROOT/${entry%%|*}" "${entry##*|}"
 done
 
@@ -61,23 +65,50 @@ for entry in "${link_derived[@]}"; do
     check_link "${entry%%|*}" "${entry##*|}"
 done
 
-broken=$(find "$CONFIG_DIR" "$OMP_DIR" -xtype l 2>/dev/null | tr '\n' ' ' || true)
+if [ -L "$codex_skills" ] &&
+    [ "$(readlink -f "$codex_skills" 2>/dev/null)" = "$(readlink -f "$REPO_ROOT/skills" 2>/dev/null)" ]; then
+    ok "skills do codex: $codex_skills"
+else
+    err "skills do codex ausente ou divergente: $codex_skills"
+fi
+
+# agents/ e a fonte unica dos role agents; os dois harnesses so a enxergam por
+# link, entao o alvo tem que resolver para a arvore canonica do repositorio.
+agents_canonical=$(readlink -f "$REPO_ROOT/agents" 2>/dev/null || true)
+if [ -L "$CONFIG_DIR/agents" ] && [ -L "$OMP_DIR/agents" ] &&
+    [ -n "$agents_canonical" ] &&
+    [ "$(readlink -f "$CONFIG_DIR/agents" 2>/dev/null)" = "$agents_canonical" ] &&
+    [ "$(readlink -f "$OMP_DIR/agents" 2>/dev/null)" = "$agents_canonical" ]; then
+    ok "agents canonicos: $CONFIG_DIR/agents e $OMP_DIR/agents"
+else
+    err "agents fora da arvore canonica: $CONFIG_DIR/agents, $OMP_DIR/agents (esperado $agents_canonical)"
+fi
+
+broken=$(find "$CONFIG_DIR" "$OMP_DIR" "$HOME/.codex" -xtype l 2>/dev/null | tr '\n' ' ' || true)
 if [ -n "$broken" ]; then
     err "links quebrados: $broken"
 fi
 
 # Nada do que vai para o Git pode carregar o caminho do home desta maquina.
 if [ -n "$HOME" ] && grep -rIlF --exclude-dir=.git "$HOME" \
-    "$REPO_ROOT/opencode" "$REPO_ROOT/omp" "$REPO_ROOT/mapping.sh" 2>/dev/null | grep -q .; then
+    "$REPO_ROOT/opencode" "$REPO_ROOT/skills" "$REPO_ROOT/agents" \
+    "$REPO_ROOT/omp" "$REPO_ROOT/mapping.sh" 2>/dev/null | grep -q .; then
     err "referencia ao home da maquina ($HOME) no repositorio"
 fi
 
+source_skills=$(find "$REPO_ROOT/skills" -maxdepth 1 -mindepth 1 -type d 2>/dev/null | wc -l)
 skills=$(find -L "$CONFIG_DIR/skills" -maxdepth 1 -mindepth 1 -type d 2>/dev/null | wc -l)
 commands=$(find -L "$CONFIG_DIR/commands" -maxdepth 1 -mindepth 1 -type f 2>/dev/null | wc -l)
-if [ "$skills" -eq "$EXPECTED_SKILLS" ]; then
+agents=$(find "$REPO_ROOT/agents" -maxdepth 1 -mindepth 1 -type f -name '*.md' 2>/dev/null | wc -l)
+if [ "$skills" -eq "$source_skills" ]; then
     ok "skills compartilhados: $skills"
 else
-    err "skills compartilhados: $skills (esperado $EXPECTED_SKILLS)"
+    err "skills compartilhados: $skills (esperado $source_skills da arvore canonica)"
+fi
+if [ "$agents" -eq "$EXPECTED_AGENTS" ]; then
+    ok "agents canonicos: $agents"
+else
+    err "agents canonicos: $agents (esperado $EXPECTED_AGENTS)"
 fi
 if [ "$commands" -eq "$EXPECTED_COMMANDS" ]; then
     ok "commands compartilhados: $commands"
