@@ -1,6 +1,6 @@
 #!/bin/bash
 # Skills Janitor - Platform Path Detection
-# Detects Claude Code, OpenAI Codex and OpenCode/OMP skill directories
+# Detects Claude Code, OpenAI Codex and OMP skill directories
 # Source this file: source "$(dirname "$0")/paths.sh"
 
 # --- Claude Code paths ---
@@ -21,10 +21,9 @@ INSTALLED_PLUGINS_FILE="$HOME/.claude/plugins/installed_plugins.json"
 CODEX_USER_SKILLS="$HOME/.agents/skills"
 CODEX_PROJECT_SKILLS="./.agents/skills"
 
-# --- OpenCode / OMP shared source (ai-agent-config) ---
-# install.sh publishes opencode/skills at this path and links the OMP agent dir
-# to it, so a single root covers both harnesses.
-OPENCODE_USER_SKILLS="$HOME/.config/opencode/skills"
+# --- OMP shared source (ai-agent-config) ---
+# install.sh links skills/ directly at this path.
+OMP_USER_SKILLS="$HOME/.omp/agent/skills"
 
 # --- Aggregate all valid skill directories ---
 # Each entry uses `|` as a separator (filesystem paths cannot contain `|`):
@@ -46,7 +45,7 @@ add_dir() {
 
 add_dir "$CLAUDE_USER_SKILLS" "user" "claude"
 add_dir "$CODEX_USER_SKILLS" "user" "codex"
-add_dir "$OPENCODE_USER_SKILLS" "user" "opencode"
+add_dir "$OMP_USER_SKILLS" "user" "omp"
 
 # Deduplicate project dirs (avoid scanning same real path twice when running
 # from $HOME, where ./.claude/skills resolves to the same place as
@@ -136,14 +135,14 @@ fi
 # --- Detect which platforms are present ---
 HAS_CLAUDE=false
 HAS_CODEX=false
-HAS_OPENCODE=false
+HAS_OMP=false
 for entry in ${ALL_SKILL_DIRS[@]+"${ALL_SKILL_DIRS[@]}"}; do
     if [[ "$entry" == *"|claude|"* ]]; then
         HAS_CLAUDE=true
     elif [[ "$entry" == *"|codex|"* ]]; then
         HAS_CODEX=true
-    elif [[ "$entry" == *"|opencode|"* ]]; then
-        HAS_OPENCODE=true
+    elif [[ "$entry" == *"|omp|"* ]]; then
+        HAS_OMP=true
     fi
 done
 
@@ -196,7 +195,7 @@ platform_label() {
     local labels=()
     [[ "$HAS_CLAUDE" == "true" ]] && labels+=("Claude Code")
     [[ "$HAS_CODEX" == "true" ]] && labels+=("Codex")
-    [[ "$HAS_OPENCODE" == "true" ]] && labels+=("OpenCode/OMP")
+    [[ "$HAS_OMP" == "true" ]] && labels+=("OMP")
     if [[ "${#labels[@]}" -eq 0 ]]; then
         echo "(no skills found)"
     else

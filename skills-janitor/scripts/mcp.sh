@@ -63,8 +63,7 @@ export CLAUDE_JSON="$HOME/.claude.json"
 export PROJECT_MCP="./.mcp.json"
 export INSTALLED_PLUGINS_FILE="$HOME/.claude/plugins/installed_plugins.json"
 # This environment: OMP declares its servers in mcp.json, same mcpServers
-# shape as Claude's user config. (OpenCode declares its own set under
-# .mcp.servers in opencode.jsonc and is deliberately not parsed here.)
+# shape as Claude's user config; it is deliberately not parsed here.
 export OMP_MCP="$HOME/.omp/agent/mcp.json"
 
 python3 <<'PYEOF'

@@ -39,6 +39,8 @@ Papéis `scout`/`writer`/`reviewer`/`mechanic` vivem em `agents/`; a skill `orch
 ## Guardrails
 - OpenSpec é a única fonte de verdade; não crie outro spec/plano.
 - Stay in scope: só o change ativo; fora dele, pare e proponha.
+- Se a mesma chamada de tool devolver o mesmo resultado duas vezes, mude de
+  abordagem; nunca repita a terceira.
 - Sem afirmar sucesso sem evidência de verificação recente.
 - Git: código vai para branch nova com prefixo (`feat/`, `fix/`) + commit. O `push` fica sob `prompt` em `bash.patterns`, então eu preparo branch, corpo do PR e o comando exato — o push e o PR são seus.
 - Com `yolo` ligado eu não peço aprovação de ferramenta, mas ainda **peço antes** de: instalar dependência, deletar arquivo que não criei, mudar contrato público (API/schema/migração), push/PR.

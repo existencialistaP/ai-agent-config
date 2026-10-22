@@ -196,13 +196,13 @@ if [[ -d "$CODEX_PROJECT_SKILLS" ]]; then
     fi
 fi
 
-# Scan the shared OpenCode/OMP source
-if [[ -d "$OPENCODE_USER_SKILLS" ]]; then
+# Scan the shared OMP source
+if [[ -d "$OMP_USER_SKILLS" ]]; then
     echo ""
-    echo "--- OpenCode/OMP Skills ($OPENCODE_USER_SKILLS) ---"
-    for skill_dir in "$OPENCODE_USER_SKILLS"/*; do
+    echo "--- OMP Skills ($OMP_USER_SKILLS) ---"
+    for skill_dir in "$OMP_USER_SKILLS"/*; do
         [[ -d "$skill_dir" || -L "$skill_dir" ]] || continue
-        lint_skill "${skill_dir%/}" "opencode-user"
+        lint_skill "${skill_dir%/}" "omp-user"
     done
 fi
 

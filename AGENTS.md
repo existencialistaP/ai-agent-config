@@ -1,6 +1,6 @@
 # ai-agent-config — instruções do repo
 
-Fonte canônica dos harnesses OpenCode e OMP. O workflow global de SDD e
+Fonte canônica do harness OMP (Oh My Pi). O workflow global de SDD e
 roteamento vem do `AGENTS.md` publicado pelo harness; este arquivo cobre apenas
 o desenvolvimento deste repositório.
 
@@ -10,8 +10,8 @@ o desenvolvimento deste repositório.
   `openspec/changes/<change>/tasks.md` antes de editar.
 - Retome do primeiro `- [ ]`. One feature at a time: um change ativo por vez;
   não abra outro em paralelo.
-- Edite a fonte canônica (`skills/`, `agents/`, `opencode/commands/`,
-  `opencode/opencode.jsonc`, `omp/`) e publique com `./install.sh`.
+- Edite a fonte canônica (`skills/`, `agents/`, `commands/`,
+  `skills-janitor/`, `omp/`) e publique com `./install.sh`.
 - Nunca edite os caminhos publicados diretamente; eles são symlinks.
 
 ## Definition of Done

@@ -6,7 +6,7 @@ argument-hint: "[--brief]"
 version: 1.7.0
 author: Krzysztof Hendzel <krzysztoff.hendzel@gmail.com>
 license: MIT
-compatibility: Requires bash 3.2+ (macOS default works). Reads local skill directories only — OpenCode/OMP (`~/.config/opencode/skills`), Codex (`~/.agents/skills`), and Claude Code data (`~/.claude/skills`, `~/.claude/agents`, plugin metadata) when present.
+compatibility: Requires bash 3.2+ (macOS default works). Reads local skill directories only — OMP (`~/.omp/agent/skills`), Codex (`~/.agents/skills`), and Claude Code data (`~/.claude/skills`, `~/.claude/agents`, plugin metadata) when present.
 tags:
   - skills
   - health-check
@@ -30,9 +30,9 @@ Modes:
 
 ## Prerequisites
 
-- The skills-janitor engine, published by ai-agent-config at `$HOME/.config/opencode/skills-janitor/scripts/` (provides `scan.sh`, `lint.sh`, `detect_dupes.sh`)
+- The skills-janitor engine, published by ai-agent-config at `$HOME/.omp/agent/skills-janitor/scripts/` (provides `scan.sh`, `lint.sh`, `detect_dupes.sh`)
 - bash 3.2+ (the stock macOS bash works; no external dependencies)
-- Read access to the skill directories above (`~/.config/opencode/skills`, `~/.agents/skills`, `~/.claude/skills` when present) and installed plugin metadata
+- Read access to the skill directories above (`~/.omp/agent/skills`, `~/.agents/skills`, `~/.claude/skills` when present) and installed plugin metadata
 - No authentication or API keys required — the scripts read local files only
 
 ## Instructions
@@ -42,15 +42,15 @@ Modes:
 Full report:
 
 ```bash
-bash $HOME/.config/opencode/skills-janitor/scripts/scan.sh
-bash $HOME/.config/opencode/skills-janitor/scripts/lint.sh
-bash $HOME/.config/opencode/skills-janitor/scripts/detect_dupes.sh
+bash $HOME/.omp/agent/skills-janitor/scripts/scan.sh
+bash $HOME/.omp/agent/skills-janitor/scripts/lint.sh
+bash $HOME/.omp/agent/skills-janitor/scripts/detect_dupes.sh
 ```
 
 Brief mode (inventory only):
 
 ```bash
-bash $HOME/.config/opencode/skills-janitor/scripts/scan.sh
+bash $HOME/.omp/agent/skills-janitor/scripts/scan.sh
 ```
 
 ### Step 2: What each script covers
@@ -111,7 +111,7 @@ Recommended actions per issue type:
 
 ## Resources
 
-- Scripts (plugin-relative): `$HOME/.config/opencode/skills-janitor/scripts/scan.sh`, `lint.sh`, `detect_dupes.sh`
+- Scripts (plugin-relative): `$HOME/.omp/agent/skills-janitor/scripts/scan.sh`, `lint.sh`, `detect_dupes.sh`
 - `/janitor-fix` — auto-fix the issues this report finds
 - `/janitor-value` — token cost + usage (combined)
 - `/janitor-discover` — find or evaluate new skills

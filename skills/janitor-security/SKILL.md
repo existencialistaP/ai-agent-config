@@ -6,7 +6,7 @@ argument-hint: "[--path <dir>] [--json]"
 version: 1.6.0
 author: Krzysztof Hendzel <krzysztoff.hendzel@gmail.com>
 license: MIT
-compatibility: Requires bash 3.2+ (macOS default works). Reads local skill files only; no network access. Harness-agnostic — the engine lives at `$HOME/.config/opencode/skills-janitor/scripts/`.
+compatibility: Requires bash 3.2+ (macOS default works). Reads local skill files only; no network access. Harness-agnostic — the engine lives at `$HOME/.omp/agent/skills-janitor/scripts/`.
 tags:
   - skills
   - security
@@ -32,7 +32,7 @@ Findings are heuristics, not proof: a RISK verdict means "read this before trust
 
 ## Prerequisites
 
-- The skills-janitor engine, published by ai-agent-config at `$HOME/.config/opencode/skills-janitor/scripts/` (provides `security.sh`)
+- The skills-janitor engine, published by ai-agent-config at `$HOME/.omp/agent/skills-janitor/scripts/` (provides `security.sh`)
 - bash 3.2+ (the stock macOS bash works; no external dependencies, no network access)
 
 ## Instructions
@@ -40,9 +40,9 @@ Findings are heuristics, not proof: a RISK verdict means "read this before trust
 ### Step 1: Run the scan
 
 ```bash
-bash $HOME/.config/opencode/skills-janitor/scripts/security.sh           # all installed skills
-bash $HOME/.config/opencode/skills-janitor/scripts/security.sh --json    # machine-readable
-bash $HOME/.config/opencode/skills-janitor/scripts/security.sh --path ~/some/skill-dir   # one directory
+bash $HOME/.omp/agent/skills-janitor/scripts/security.sh           # all installed skills
+bash $HOME/.omp/agent/skills-janitor/scripts/security.sh --json    # machine-readable
+bash $HOME/.omp/agent/skills-janitor/scripts/security.sh --path ~/some/skill-dir   # one directory
 ```
 
 ### Step 2: Present verdicts honestly
@@ -86,7 +86,7 @@ Summary line (`Scanned: N | RISK: x | REVIEW: y | PASS: z`) followed by flagged 
 
 ## Resources
 
-- Scan engine (plugin-relative): `$HOME/.config/opencode/skills-janitor/scripts/security.sh`
+- Scan engine (plugin-relative): `$HOME/.omp/agent/skills-janitor/scripts/security.sh`
 - `/janitor-discover <url>` — pre-install check (overlap + this security scan on the fetched SKILL.md)
 - `/janitor-report` — general health check (errors, duplicates, broken skills)
 - `/janitor-swipe` — delete what you don't trust

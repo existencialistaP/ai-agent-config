@@ -21,7 +21,7 @@ $ARGUMENTS
 ## Workflow
 
 1. Read `AGENTS.md` and any relevant project instructions.
-2. If a project context map exists at `~/.config/opencode/contexts/<project>.md`, read it
+2. If a project context map exists at `~/.local/share/ai-agent-config/contexts/<project>.md`, read it
    (see the **context** skill) to orient before exploring.
 3. Explore the real project structure.
 4. Search for existing implementations related to the question.

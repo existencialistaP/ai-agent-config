@@ -6,7 +6,7 @@ argument-hint: "[--deck <file>] [--apply <decisions.json>]"
 version: 1.7.0
 author: Krzysztof Hendzel <krzysztoff.hendzel@gmail.com>
 license: MIT
-compatibility: Requires bash 3.2+ and a terminal of at least 50x22. The TUI must be run interactively by the user — under Claude Code prefix the command with '!'; under OMP/OpenCode run the script directly in a terminal. MCP removals edit the config file the server is declared in (including `~/.omp/agent/mcp.json`).
+compatibility: Requires bash 3.2+ and a terminal of at least 50x22. The TUI must be run interactively by the user — under Claude Code prefix the command with '!'; under OMP run the script directly in a terminal. MCP removals edit the config file the server is declared in (including `~/.omp/agent/mcp.json`).
 tags:
   - skills
   - triage
@@ -25,7 +25,7 @@ The deck is sorted "most likely waste first" — heavy, never-used skills appear
 
 ## Prerequisites
 
-- The skills-janitor engine, published by ai-agent-config at `$HOME/.config/opencode/skills-janitor/scripts/` (provides `swipe.sh` and `swipe-build-deck.sh`)
+- The skills-janitor engine, published by ai-agent-config at `$HOME/.omp/agent/skills-janitor/scripts/` (provides `swipe.sh` and `swipe-build-deck.sh`)
 - bash 3.2+ (the stock macOS bash works; no external dependencies)
 - **An interactive terminal at least 50 columns x 22 rows** — the TUI reads single keypresses
 
@@ -36,7 +36,7 @@ The deck is sorted "most likely waste first" — heavy, never-used skills appear
 Inside Claude Code, the Bash tool's stdin is non-interactive, so the keypress reader can't work. The user must invoke it via the `!` prefix so the command runs in their actual shell:
 
 ```
-!bash $HOME/.config/opencode/skills-janitor/scripts/swipe.sh
+!bash $HOME/.omp/agent/skills-janitor/scripts/swipe.sh
 ```
 
 When the user asks for `/janitor-swipe`, tell them to run that command in their terminal. Do NOT try to run it yourself via the Bash tool — it will error with "needs an interactive terminal".
@@ -102,17 +102,17 @@ Edge cases handled by the script: Ctrl-C mid-swipe restores the terminal; symlin
 
 **Input**: "/janitor-swipe" or "help me clean up my skills interactively"
 
-**Output**: Explain the flow in two sentences, then give the exact command to run: `!bash $HOME/.config/opencode/skills-janitor/scripts/swipe.sh` — and offer to review the results afterwards.
+**Output**: Explain the flow in two sentences, then give the exact command to run: `!bash $HOME/.omp/agent/skills-janitor/scripts/swipe.sh` — and offer to review the results afterwards.
 
 ### Example 2: Resume saved decisions
 
 **Input**: "I saved my swipe decisions yesterday — apply them."
 
-**Output**: `!bash $HOME/.config/opencode/skills-janitor/scripts/swipe.sh --apply ~/.skills-janitor/swipe-<timestamp>.json` (list the files in `~/.skills-janitor/` to find the right one).
+**Output**: `!bash $HOME/.omp/agent/skills-janitor/scripts/swipe.sh --apply ~/.skills-janitor/swipe-<timestamp>.json` (list the files in `~/.skills-janitor/` to find the right one).
 
 ## Resources
 
-- TUI script (plugin-relative): `$HOME/.config/opencode/skills-janitor/scripts/swipe.sh`; deck builder: `$HOME/.config/opencode/skills-janitor/scripts/swipe-build-deck.sh`
+- TUI script (plugin-relative): `$HOME/.omp/agent/skills-janitor/scripts/swipe.sh`; deck builder: `$HOME/.omp/agent/skills-janitor/scripts/swipe-build-deck.sh`
 - Deletion log: `~/.skills-janitor/log.jsonl`
 - `/janitor-report` — same data as a non-interactive list
 - `/janitor-value` — the token + usage data underneath the swipe deck

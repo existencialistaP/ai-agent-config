@@ -306,13 +306,13 @@ if [[ -d "$CODEX_PROJECT_SKILLS" ]]; then
     fi
 fi
 
-# Scan the shared OpenCode/OMP source
-if [[ -d "$OPENCODE_USER_SKILLS" ]]; then
+# Scan the shared OMP source
+if [[ -d "$OMP_USER_SKILLS" ]]; then
     echo ""
-    echo "--- OpenCode/OMP Skills ($OPENCODE_USER_SKILLS) ---"
-    for skill_dir in "$OPENCODE_USER_SKILLS"/*; do
+    echo "--- OMP Skills ($OMP_USER_SKILLS) ---"
+    for skill_dir in "$OMP_USER_SKILLS"/*; do
         [[ -d "$skill_dir" || -L "$skill_dir" ]] || continue
-        fix_skill "${skill_dir%/}" "opencode-user"
+        fix_skill "${skill_dir%/}" "omp-user"
     done
 fi
 
@@ -384,7 +384,7 @@ if [[ "$PRUNE" == "true" ]]; then
         prune_dir "$PROJECT_SKILLS" "project"
     fi
     [[ -d "$CODEX_USER_SKILLS" ]] && prune_dir "$CODEX_USER_SKILLS" "codex-user"
-    [[ -d "$OPENCODE_USER_SKILLS" ]] && prune_dir "$OPENCODE_USER_SKILLS" "opencode-user"
+    [[ -d "$OMP_USER_SKILLS" ]] && prune_dir "$OMP_USER_SKILLS" "omp-user"
     if [[ -d "$CODEX_PROJECT_SKILLS" ]]; then
         CODEX_P_REAL=$(cd "$CODEX_PROJECT_SKILLS" 2>/dev/null && pwd -P || echo "")
         CODEX_U_REAL=$(cd "$CODEX_USER_SKILLS" 2>/dev/null && pwd -P || echo "")

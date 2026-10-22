@@ -15,7 +15,7 @@ transport decisions (direct / task batch / Herdr / handoff): one failure per sli
 
 1. Reproduce the bug reliably; capture the exact failure (error, second-level, exact command).
 2. Read the relevant code, tests and logs; form hypotheses; test them cheaply; find the root
-   cause. If a project context map exists at `~/.config/opencode/contexts/<project>.md`, read it
+   cause. If a project context map exists at `~/.local/share/ai-agent-config/contexts/<project>.md`, read it
    first (see the **context** skill) to locate the relevant code faster. Use the
    **dispatching-parallel-agents** skill if there are multiple independent failures to
    investigate.

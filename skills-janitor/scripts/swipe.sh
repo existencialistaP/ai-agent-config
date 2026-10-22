@@ -6,7 +6,7 @@
 #
 # Must run from an interactive terminal. Inside Claude Code, prefix with `!`
 # so the shell — not the Bash tool — handles stdin:
-#   !bash $HOME/.config/opencode/skills-janitor/scripts/swipe.sh
+#   !bash $HOME/.omp/agent/skills-janitor/scripts/swipe.sh
 
 set -euo pipefail
 
@@ -58,7 +58,7 @@ if [[ "$SKIP_TUI" == "0" ]]; then
         cat >&2 <<'MSG'
 Swipe needs an interactive terminal. Inside Claude Code, prefix the command
 with `!` so the shell handles stdin:
-  !bash $HOME/.config/opencode/skills-janitor/scripts/swipe.sh
+  !bash $HOME/.omp/agent/skills-janitor/scripts/swipe.sh
 
 For the same data in list form, run /janitor-report or /janitor-value instead.
 MSG

@@ -7,7 +7,7 @@ Use this rubric when adapting a skill for one user's local environment.
 Prefer live evidence in this order:
 
 1. The target `SKILL.md` and bundled files.
-2. Installed copies in `~/.config/opencode/skills` (this environment's single source, linked from `~/.omp/agent/skills`), `~/.agents/skills`, `~/.codex/skills`, or `~/.claude/skills`.
+2. Installed copies in `~/.omp/agent/skills` (this environment's single source, linked from `~/.omp/agent/skills`), `~/.agents/skills`, `~/.codex/skills`, or `~/.claude/skills`.
 3. Project-local `AGENTS.md`, `CLAUDE.md`, README, scripts, and package metadata.
 4. Relevant memories or session summaries.
 5. Recent shell history, repo commands, or logs when the user asks for operational tuning.

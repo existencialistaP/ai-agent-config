@@ -6,7 +6,7 @@ argument-hint: "[--weeks N] [--budget N] [--json]"
 version: 1.7.0
 author: Krzysztof Hendzel <krzysztoff.hendzel@gmail.com>
 license: MIT
-compatibility: Requires bash 3.2+ (macOS default works). Usage evidence comes from the local harness — OpenCode/OMP session transcripts (`~/.omp/agent/sessions`) and prompt history (`~/.omp/agent/history.db`) — plus Claude Code history under `~/.claude` when present.
+compatibility: Requires bash 3.2+ (macOS default works). Usage evidence comes from the local harness — OMP session transcripts (`~/.omp/agent/sessions`) and prompt history (`~/.omp/agent/history.db`) — plus Claude Code history under `~/.claude` when present.
 tags:
   - skills
   - context-window
@@ -27,9 +27,9 @@ Replaces the v1.2 split between `/janitor-tokens` (cost only) and `/janitor-usag
 
 ## Prerequisites
 
-- The skills-janitor engine, published by ai-agent-config at `$HOME/.config/opencode/skills-janitor/scripts/` (provides `value.sh`)
+- The skills-janitor engine, published by ai-agent-config at `$HOME/.omp/agent/skills-janitor/scripts/` (provides `value.sh`)
 - bash 3.2+ (the stock macOS bash works; no external dependencies)
-- Read access to `~/.config/opencode/skills`, `~/.agents/skills`, the OMP session transcripts (`~/.omp/agent/sessions`) and prompt history (`~/.omp/agent/history.db`)
+- Read access to `~/.omp/agent/skills`, `~/.agents/skills`, the OMP session transcripts (`~/.omp/agent/sessions`) and prompt history (`~/.omp/agent/history.db`)
 - No authentication or API keys required — the script reads local files only
 
 ## Instructions
@@ -37,7 +37,7 @@ Replaces the v1.2 split between `/janitor-tokens` (cost only) and `/janitor-usag
 ### Step 1: Run the value script
 
 ```bash
-bash $HOME/.config/opencode/skills-janitor/scripts/value.sh [--weeks N] [--budget N] [--json]
+bash $HOME/.omp/agent/skills-janitor/scripts/value.sh [--weeks N] [--budget N] [--json]
 ```
 
 - `--weeks N` — usage lookback window (default: 4)
@@ -87,13 +87,13 @@ Followed by a summary:
 
 **Input**: "Are my skills worth their token cost?"
 
-**Output**: Run `bash $HOME/.config/opencode/skills-janitor/scripts/value.sh`, then present the table sorted by waste and the summary line, e.g. "Always-loaded total: 8,420 tokens (4.2% of 200k budget). 6 of 31 skills unused in 4 weeks; top waster: `heavy-skill` (1,900 tokens, never used)."
+**Output**: Run `bash $HOME/.omp/agent/skills-janitor/scripts/value.sh`, then present the table sorted by waste and the summary line, e.g. "Always-loaded total: 8,420 tokens (4.2% of 200k budget). 6 of 31 skills unused in 4 weeks; top waster: `heavy-skill` (1,900 tokens, never used)."
 
 ### Example 2: Longer lookback, custom budget
 
 **Input**: "Check skill usage over the last quarter against a 500k window."
 
-**Output**: Run `bash $HOME/.config/opencode/skills-janitor/scripts/value.sh --weeks 12 --budget 500000` and present the same table with the adjusted lookback and percentages.
+**Output**: Run `bash $HOME/.omp/agent/skills-janitor/scripts/value.sh --weeks 12 --budget 500000` and present the same table with the adjusted lookback and percentages.
 
 ### Example 3: Machine-readable output
 
@@ -103,11 +103,11 @@ Followed by a summary:
 
 ### MCP servers (v1.7)
 
-For the MCP side of context cost, run `bash $HOME/.config/opencode/skills-janitor/scripts/mcp.sh [--weeks N]` — inventories every configured server (user, project, plugin) with REAL call counts from session transcripts, and lists servers unused in the window. No token guesses: schemas live server-side, so the janitor reports calls, distinct tools used, and last-used instead.
+For the MCP side of context cost, run `bash $HOME/.omp/agent/skills-janitor/scripts/mcp.sh [--weeks N]` — inventories every configured server (user, project, plugin) with REAL call counts from session transcripts, and lists servers unused in the window. No token guesses: schemas live server-side, so the janitor reports calls, distinct tools used, and last-used instead.
 
 ## Resources
 
-- Report script (plugin-relative): `$HOME/.config/opencode/skills-janitor/scripts/value.sh`
+- Report script (plugin-relative): `$HOME/.omp/agent/skills-janitor/scripts/value.sh`
 - `/janitor-report` — full health check including duplicates and broken skills
 - `/janitor-fix --prune` — remove broken symlinks and empty skill dirs
 - `/janitor-discover` — find new skills or check one before installing

@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
-# Confere a instalacao do harness: executaveis, links, contagens, paths fixos,
-# gateway do sleev e integracoes opcionais.
+# Confere a instalacao do harness OMP: executaveis, links, contagens, paths
+# fixos, gateway do sleev e integracoes opcionais.
 #
 # Erros estruturais (link errado/quebrado, contagem fora do esperado, path de
-# usuario fixo no que vai para o Git) falham com exit 1. Ausencia de auth,
-# gateway ou integracao externa gera aviso com a instrucao manual -- nada aqui
-# copia credencial ou artefato gerado por outro aplicativo.
+# usuario fixo no que vai para o Git, link legado apontando para o repo)
+# falham com exit 1. Ausencia de auth, gateway ou integracao externa gera aviso
+# com a instrucao manual -- nada aqui copia credencial ou artefato gerado por
+# outro aplicativo.
 
 set -uo pipefail
 
 REPO_ROOT=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd -P)
-CONFIG_DIR="$HOME/.config/opencode"
 OMP_DIR="$HOME/.omp/agent"
-EXPECTED_COMMANDS=20
+EXPECTED_COMMANDS=21
 EXPECTED_AGENTS=5
 
 errors=0
@@ -30,7 +30,7 @@ warn() {
 # shellcheck source=mapping.sh
 . "$REPO_ROOT/mapping.sh"
 
-for cmd in opencode omp serena openwiki sleev; do
+for cmd in omp serena openwiki sleev; do
     if command -v "$cmd" >/dev/null 2>&1; then
         ok "executavel: $cmd"
     else
@@ -53,52 +53,37 @@ check_link() { # esperado destino
     fi
 }
 
-codex_skills="$HOME/.codex/skills"
-
 for entry in "${link_sources[@]}"; do
-    # O alvo do codex tem check proprio abaixo.
-    [ "${entry##*|}" = "$codex_skills" ] && continue
     check_link "$REPO_ROOT/${entry%%|*}" "${entry##*|}"
 done
 
-for entry in "${link_derived[@]}"; do
-    check_link "${entry%%|*}" "${entry##*|}"
-done
-
-if [ -L "$codex_skills" ] &&
-    [ "$(readlink -f "$codex_skills" 2>/dev/null)" = "$(readlink -f "$REPO_ROOT/skills" 2>/dev/null)" ]; then
-    ok "skills do codex: $codex_skills"
-else
-    err "skills do codex ausente ou divergente: $codex_skills"
-fi
-
-# agents/ e a fonte unica dos role agents; os dois harnesses so a enxergam por
-# link, entao o alvo tem que resolver para a arvore canonica do repositorio.
-agents_canonical=$(readlink -f "$REPO_ROOT/agents" 2>/dev/null || true)
-if [ -L "$CONFIG_DIR/agents" ] && [ -L "$OMP_DIR/agents" ] &&
-    [ -n "$agents_canonical" ] &&
-    [ "$(readlink -f "$CONFIG_DIR/agents" 2>/dev/null)" = "$agents_canonical" ] &&
-    [ "$(readlink -f "$OMP_DIR/agents" 2>/dev/null)" = "$agents_canonical" ]; then
-    ok "agents canonicos: $CONFIG_DIR/agents e $OMP_DIR/agents"
-else
-    err "agents fora da arvore canonica: $CONFIG_DIR/agents, $OMP_DIR/agents (esperado $agents_canonical)"
-fi
-
-broken=$(find "$CONFIG_DIR" "$OMP_DIR" "$HOME/.codex" -xtype l 2>/dev/null | tr '\n' ' ' || true)
+broken=$(find "$OMP_DIR" -xtype l 2>/dev/null | tr '\n' ' ' || true)
 if [ -n "$broken" ]; then
     err "links quebrados: $broken"
 fi
 
+# A limpeza do install so remove links que apontam para este checkout. Se
+# sobrou algum, a migracao nao rodou.
+for dst in "${legacy_links[@]}"; do
+    [ -L "$dst" ] || continue
+    raw=$(readlink "$dst" 2>/dev/null || true)
+    resolved=$(readlink -f "$dst" 2>/dev/null || true)
+    case "$raw $resolved" in
+        *"$REPO_ROOT"*) err "link legado ainda aponta para o repo: $dst" ;;
+    esac
+done
+
 # Nada do que vai para o Git pode carregar o caminho do home desta maquina.
 if [ -n "$HOME" ] && grep -rIlF --exclude-dir=.git "$HOME" \
-    "$REPO_ROOT/opencode" "$REPO_ROOT/skills" "$REPO_ROOT/agents" \
-    "$REPO_ROOT/omp" "$REPO_ROOT/mapping.sh" 2>/dev/null | grep -q .; then
+    "$REPO_ROOT/commands" "$REPO_ROOT/skills" "$REPO_ROOT/agents" \
+    "$REPO_ROOT/skills-janitor" "$REPO_ROOT/omp" \
+    "$REPO_ROOT/mapping.sh" 2>/dev/null | grep -q .; then
     err "referencia ao home da maquina ($HOME) no repositorio"
 fi
 
 source_skills=$(find "$REPO_ROOT/skills" -maxdepth 1 -mindepth 1 -type d 2>/dev/null | wc -l)
-skills=$(find -L "$CONFIG_DIR/skills" -maxdepth 1 -mindepth 1 -type d 2>/dev/null | wc -l)
-commands=$(find -L "$CONFIG_DIR/commands" -maxdepth 1 -mindepth 1 -type f 2>/dev/null | wc -l)
+skills=$(find -L "$OMP_DIR/skills" -maxdepth 1 -mindepth 1 -type d 2>/dev/null | wc -l)
+commands=$(find -L "$OMP_DIR/commands" -maxdepth 1 -mindepth 1 -type f 2>/dev/null | wc -l)
 agents=$(find "$REPO_ROOT/agents" -maxdepth 1 -mindepth 1 -type f -name '*.md' 2>/dev/null | wc -l)
 if [ "$skills" -eq "$source_skills" ]; then
     ok "skills compartilhados: $skills"
@@ -129,13 +114,6 @@ if command -v sleev >/dev/null 2>&1; then
         warn "gateway do sleev fora de 127.0.0.1:17321: rode 'sleev setup --no-open' e, apos o login, 'sleev gateway bind --host 127.0.0.1 --port 17321 --restart'"
     fi
 fi
-
-# Integracoes geradas por Orca/herdr: opcionais e nunca versionadas.
-for f in "$CONFIG_DIR/plugins/orca-opencode-status.js" \
-    "$CONFIG_DIR/plugins/herdr-agent-state.js" \
-    "$CONFIG_DIR/herdr-tui-session.js"; do
-    [ -e "$f" ] || warn "integracao externa ausente (opcional): $f"
-done
 
 if [ -d "$HOME/.omp/plugins/cache/plugins/i-have-adhd___i-have-adhd___0.4.1" ]; then
     ok "plugin i-have-adhd@0.4.1 instalado"

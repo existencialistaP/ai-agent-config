@@ -1,45 +1,40 @@
 # shellcheck shell=bash
 # shellcheck disable=SC2034  # os arrays sao consumidos por install.sh e doctor.sh
-# Mapa unico de origem -> destino, compartilhado por install.sh e doctor.sh.
-# Quem der source precisa definir antes: CONFIG_DIR, OMP_DIR, HOME.
+# Mapa unico de origem -> destino para o harness OMP.
+# Quem der source precisa definir antes: OMP_DIR, HOME.
 #
-# Formato: "origem|destino". As origens sao relativas a raiz do repositorio,
-# exceto as de segunda ordem (OMP consome o que o OpenCode ja consome).
+# Formato: "origem|destino". As origens sao relativas a raiz do repositorio.
 
 # Links: um unico arquivo/diretorio fonte, sem copia.
 link_sources=(
-    "opencode/opencode.jsonc|$CONFIG_DIR/opencode.jsonc"
-    "opencode/AGENTS.md|$CONFIG_DIR/AGENTS.md"
-    "opencode/commands|$CONFIG_DIR/commands"
-    # skills/ e a arvore canonica; opencode/skills e um symlink para ../skills,
-    # entao esta entrada mantem o destino ja publicado resolvendo para ela.
-    "opencode/skills|$CONFIG_DIR/skills"
-    "skills|$CONFIG_DIR/skills"
-    "skills|$HOME/.codex/skills"
-    "opencode/plugins/adaptive-thinking.js|$CONFIG_DIR/plugins/adaptive-thinking.js"
-    "opencode/skills-janitor|$CONFIG_DIR/skills-janitor"
-    # agents/ e a arvore canonica dos role agents; opencode/agents e um symlink
-    # para ../agents, entao esta entrada publica a mesma arvore nos dois harnesses.
-    "agents|$CONFIG_DIR/agents"
     "omp/AGENTS.md|$OMP_DIR/AGENTS.md"
     "omp/APPEND_SYSTEM.md|$OMP_DIR/APPEND_SYSTEM.md"
     "omp/config.yml|$OMP_DIR/config.yml"
     "omp/mcp.json|$OMP_DIR/mcp.json"
+    "skills|$OMP_DIR/skills"
+    "agents|$OMP_DIR/agents"
+    "commands|$OMP_DIR/commands"
+    "skills-janitor|$OMP_DIR/skills-janitor"
 )
 
-# Segunda ordem: o OMP aponta para o que ja esta publicado pelo OpenCode.
-link_derived=(
-    "$CONFIG_DIR/commands|$OMP_DIR/commands"
-    "$CONFIG_DIR/skills|$OMP_DIR/skills"
-    "$CONFIG_DIR/agents|$OMP_DIR/agents"
-)
-
-# Seeds mutaveis: copia somente se o destino ainda nao existir. Orca/herdr/OMP
-# reescrevem esses arquivos, entao uma versao live nunca e sobrescrita.
-# O placeholder ${HOME} é resolvido na copia.
+# Seeds mutaveis: copia somente se o destino ainda nao existir. OMP reescreve
+# esses arquivos, entao uma versao live nunca e sobrescrita.
+# O placeholder ${HOME} e resolvido na copia.
 seed_sources=(
-    "opencode/cli.json|$CONFIG_DIR/cli.json"
-    "opencode/tui.jsonc|$CONFIG_DIR/tui.jsonc"
     "omp/plugins/omp-plugins.lock.json|$HOME/.omp/plugins/omp-plugins.lock.json"
     "omp/marketplaces.json|$HOME/.omp/marketplaces.json"
+)
+
+# Links criados por versoes anteriores deste repo (OpenCode/Codex). O install
+# remove apenas os que resolvem para dentro deste checkout; arquivos reais e
+# links de terceiros ficam intocados.
+legacy_links=(
+    "$HOME/.config/opencode/opencode.jsonc"
+    "$HOME/.config/opencode/AGENTS.md"
+    "$HOME/.config/opencode/commands"
+    "$HOME/.config/opencode/skills"
+    "$HOME/.config/opencode/agents"
+    "$HOME/.config/opencode/skills-janitor"
+    "$HOME/.config/opencode/plugins/adaptive-thinking.js"
+    "$HOME/.codex/skills"
 )
