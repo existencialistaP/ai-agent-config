@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Publica as configuracoes compartilhadas de OpenCode e OMP deste checkout.
+# Publica as configuracoes deste checkout no harness OMP.
 #
 #   ./install.sh [--dry-run]
 #
@@ -12,7 +12,6 @@ set -euo pipefail
 
 REPO_ROOT=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd -P)
 DRY_RUN=0
-CONFIG_DIR="$HOME/.config/opencode"
 OMP_DIR="$HOME/.omp/agent"
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/ai-agent-config"
 BACKUP_DIR="$STATE_DIR/backups/$(date +%Y%m%dT%H%M%S)"
@@ -80,6 +79,21 @@ link_target() { # origem destino
     run ln -s "$src" "$dst"
 }
 
+prune_legacy_link() { # destino absoluto
+    local dst="$1" raw resolved
+    [ -L "$dst" ] || return 0
+    raw=$(readlink "$dst" 2>/dev/null || true)
+    resolved=$(readlink -f "$dst" 2>/dev/null || true)
+    case "$raw $resolved" in
+        *"$REPO_ROOT"*)
+            backup_path "$dst"
+            ;;
+        *)
+            info "link legado mantido (fora do repo): $dst"
+            ;;
+    esac
+}
+
 install_seed() { # origem destino
     local src="$1" dst="$2"
     if [ -e "$dst" ] || [ -L "$dst" ]; then
@@ -96,16 +110,14 @@ install_seed() { # origem destino
     info "seed instalado: $dst"
 }
 
-ensure_dir "$CONFIG_DIR"
-ensure_dir "$CONFIG_DIR/plugins"
 ensure_dir "$OMP_DIR"
+
+for dst in "${legacy_links[@]}"; do
+    prune_legacy_link "$dst"
+done
 
 for entry in "${link_sources[@]}"; do
     link_target "$REPO_ROOT/${entry%%|*}" "${entry##*|}"
-done
-
-for entry in "${link_derived[@]}"; do
-    link_target "${entry%%|*}" "${entry##*|}"
 done
 
 for entry in "${seed_sources[@]}"; do

@@ -43,6 +43,21 @@ Reviewer:
     verdict counts for nothing. If the diff feels too large for one
     pass, review it in passes yourself and say so in your report.
 
+    ## Review Sequence
+
+    1. **Tests first.** Read the tests before the implementation: they state
+       the intended behavior, and a missing or weak test is a finding in
+       itself. Verify they test behavior, not mocks.
+    2. **Walk the change** once per axis below. For each file, name what
+       changed and whether the tests would still pass if it were wrong.
+    3. **Prove the tests.** Invert one condition the change adds (drop a
+       negation, swap `&&` for `||`), run the suite, then restore the file.
+       A mutation that stays green means a test is missing — name it.
+    4. **Check every finding** against the callers, guards and tests that
+       reach the changed code. Drop the finding if they rule it out. Label
+       defects that already exist in the base as pre-existing, not
+       regressions. Zero findings is a valid review.
+
     ## What to Check
 
     **Plan alignment:**
@@ -59,20 +74,24 @@ Reviewer:
 
     **Architecture:**
     - Sound design decisions?
-    - Reasonable scalability and performance?
-    - Security concerns?
+    - Reasonable scalability and performance? Look for N+1 queries,
+      unbounded loops, and synchronous work on a hot path.
+    - Security boundaries explicit (input validated where it enters, authz
+      checked where the action happens)?
     - Integrates cleanly with surrounding code?
 
     **Testing:**
     - Tests verify real behavior, not mocks?
     - Edge cases covered?
     - Integration tests where they matter?
+    - Would the tests fail if the change were wrong? (mutation check above)
     - All tests passing?
 
     **Production readiness:**
     - Migration strategy if schema changed?
     - Backward compatibility considered?
     - Documentation complete?
+    - Is the new failure path observable (logged, counted, surfaced to the caller)?
     - No obvious bugs?
 
     ## Calibration
@@ -80,6 +99,14 @@ Reviewer:
     Categorize issues by actual severity. Not everything is Critical.
     Acknowledge what was done well before listing issues — accurate praise
     helps the implementer trust the rest of the feedback.
+
+    Lead with what matters: a few high-conviction findings beat a long list.
+    If there is one structural problem and ten nits, the structural problem
+    is the review. When you flag a structural problem, name the move —
+    replace a conditional chain with a dispatcher, collapse duplicate
+    branches, separate orchestration from business logic, delete a
+    pass-through wrapper, make a type boundary explicit — not just the
+    complaint. Don't soften a real issue; don't rubber-stamp.
 
     If you find significant deviations from the plan, flag them specifically
     so the implementer can confirm whether the deviation was intentional.

@@ -1,6 +1,6 @@
 ---
 name: systematic-debugging
-description: Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes
+description: Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes. Use when asked what broke or why something throws, or when something stopped working and returns the wrong result after a change — even when the cause looks obvious from reading the pasted code, diff, or stack trace; name the cause, make the minimal fix, and say how to confirm it.
 ---
 
 # Systematic Debugging

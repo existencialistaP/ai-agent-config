@@ -39,6 +39,34 @@ At each checkpoint in the plan, or after each batch of tasks when the plan has n
 3. When the harness supports role dispatch, dispatch a `reviewer` against that diff and the plan items it covers.
 4. Report the review findings before continuing. Address blocking findings first; if a finding changes the approach, return to Step 1.
 
+### Passes (large, multi-phase changes)
+
+For a whole subsystem or a cross-cutting change, do not finish one corner
+before sketching the whole. Work in passes, each at higher fidelity:
+
+1. **Sketch** — every major flow works end to end, thinly. Rough is fine;
+   faked or hidden is not.
+2. **Structure** — real data model, real module boundaries, the main failure
+   paths.
+3. **Detail** — hardening, crash recovery, edge cases, polish.
+
+Pass rules:
+
+- Each pass has a one-line goal and at most four lanes with disjoint write
+  scopes. Agree the interfaces between lanes before dispatching.
+- Never defer security or money/data correctness to a later pass.
+- End each pass with broad validation once, a review gate scoped to that pass's
+  fidelity, and a commit.
+- Findings that belong to a later pass go to a ranked known-issues list in
+  `tasks.md`; they do not become an unbounded fix loop.
+- After the gate, run the product as a whole and re-plan the next pass from what
+  you see. If files grew huge or boundaries blurred, make reorganization part
+  of the next pass.
+- State stays in `tasks.md` and `orchestration.md`. Do not create
+  `.slim/deepwork` or a second progress file.
+
+Skip passes for small or linear work; use the normal task cycle.
+
 ### Step 3: Complete Development
 
 After all tasks complete and verified:

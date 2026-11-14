@@ -1,4 +1,4 @@
-# Runtime e estado de OpenCode/OMP: nunca versionar.
+# Runtime e estado do OMP: nunca versionar.
 contexts/
 vendor/
 .serena/

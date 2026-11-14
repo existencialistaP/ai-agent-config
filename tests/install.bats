@@ -18,29 +18,28 @@ setup() {
     BACKUPS="$XDG_STATE_HOME/ai-agent-config/backups"
 }
 
-@test "install publica OpenCode->repo e OMP->OpenCode" {
+@test "install publica as arvores canonicas em ~/.omp/agent" {
     run "$REPO/install.sh"
     [ "$status" -eq 0 ]
 
-    [ "$(readlink -f "$HOME/.config/opencode/opencode.jsonc")" = "$(readlink -f "$REPO/opencode/opencode.jsonc")" ]
-    [ "$(readlink -f "$HOME/.config/opencode/commands")" = "$(readlink -f "$REPO/opencode/commands")" ]
-    [ "$(readlink -f "$HOME/.config/opencode/skills")" = "$(readlink -f "$REPO/opencode/skills")" ]
-    [ "$(readlink -f "$HOME/.config/opencode/plugins/adaptive-thinking.js")" = "$(readlink -f "$REPO/opencode/plugins/adaptive-thinking.js")" ]
-    [ "$(readlink -f "$HOME/.omp/agent/commands")" = "$(readlink -f "$REPO/opencode/commands")" ]
-    [ "$(readlink -f "$HOME/.omp/agent/skills")" = "$(readlink -f "$REPO/opencode/skills")" ]
+    [ "$(readlink -f "$HOME/.omp/agent/AGENTS.md")" = "$(readlink -f "$REPO/omp/AGENTS.md")" ]
+    [ "$(readlink -f "$HOME/.omp/agent/APPEND_SYSTEM.md")" = "$(readlink -f "$REPO/omp/APPEND_SYSTEM.md")" ]
+    [ "$(readlink -f "$HOME/.omp/agent/config.yml")" = "$(readlink -f "$REPO/omp/config.yml")" ]
+    [ "$(readlink -f "$HOME/.omp/agent/mcp.json")" = "$(readlink -f "$REPO/omp/mcp.json")" ]
+    [ "$(readlink -f "$HOME/.omp/agent/skills")" = "$(readlink -f "$REPO/skills")" ]
+    [ "$(readlink -f "$HOME/.omp/agent/agents")" = "$(readlink -f "$REPO/agents")" ]
+    [ "$(readlink -f "$HOME/.omp/agent/commands")" = "$(readlink -f "$REPO/commands")" ]
+    [ "$(readlink -f "$HOME/.omp/agent/skills-janitor")" = "$(readlink -f "$REPO/skills-janitor")" ]
 
-    # O link do OMP aponta para o OpenCode, nao direto para o repositorio.
-    [ "$(readlink "$HOME/.omp/agent/commands")" = "$HOME/.config/opencode/commands" ]
-    [ "$(readlink "$HOME/.omp/agent/skills")" = "$HOME/.config/opencode/skills" ]
-
-    [ "$(find -L "$HOME/.config/opencode/commands" -maxdepth 1 -type f | wc -l)" -eq 20 ]
-    [ "$(find -L "$HOME/.config/opencode/skills" -maxdepth 1 -mindepth 1 -type d | wc -l)" -eq "$(find -L "$REPO/opencode/skills" -maxdepth 1 -mindepth 1 -type d | wc -l)" ]
+    [ "$(find -L "$HOME/.omp/agent/commands" -maxdepth 1 -type f | wc -l)" -eq 21 ]
+    [ "$(find -L "$HOME/.omp/agent/skills" -maxdepth 1 -mindepth 1 -type d | wc -l)" -eq "$(find -L "$REPO/skills" -maxdepth 1 -mindepth 1 -type d | wc -l)" ]
     [ ! -e "$HOME/.omp/agent/commands/context-update.md" ]
+    [ ! -e "$HOME/.config/opencode" ]
 }
 
 @test "conflito real vai para backup e a segunda execucao nao cria backup novo" {
-    mkdir -p "$HOME/.config/opencode/commands"
-    printf 'meu comando\n' >"$HOME/.config/opencode/commands/meu.md"
+    mkdir -p "$HOME/.omp/agent/commands"
+    printf 'meu comando\n' >"$HOME/.omp/agent/commands/meu.md"
 
     run "$REPO/install.sh"
     [ "$status" -eq 0 ]
@@ -62,8 +61,6 @@ setup() {
     run "$REPO/install.sh"
     [ "$status" -eq 0 ]
 
-    [ -f "$HOME/.config/opencode/cli.json" ]
-    [ -f "$HOME/.config/opencode/tui.jsonc" ]
     [ -f "$HOME/.omp/marketplaces.json" ]
     [ -f "$HOME/.omp/plugins/omp-plugins.lock.json" ]
 
@@ -73,16 +70,12 @@ setup() {
 }
 
 @test "seeds nunca sobrescrevem a versao live" {
-    mkdir -p "$HOME/.config/opencode" "$HOME/.omp/plugins"
-    printf '{"plugins":["herdr"]}\n' >"$HOME/.config/opencode/cli.json"
-    printf '{"plugin":["herdr"]}\n' >"$HOME/.config/opencode/tui.jsonc"
+    mkdir -p "$HOME/.omp/plugins"
     printf '{"plugins":{"outro":{"version":"9.9.9"}}}\n' >"$HOME/.omp/plugins/omp-plugins.lock.json"
 
     run "$REPO/install.sh"
     [ "$status" -eq 0 ]
 
-    [ "$(cat "$HOME/.config/opencode/cli.json")" = '{"plugins":["herdr"]}' ]
-    [ "$(cat "$HOME/.config/opencode/tui.jsonc")" = '{"plugin":["herdr"]}' ]
     grep -q 'outro' "$HOME/.omp/plugins/omp-plugins.lock.json"
     ! grep -q 'i-have-adhd' "$HOME/.omp/plugins/omp-plugins.lock.json"
 }
@@ -94,7 +87,6 @@ setup() {
     [[ "$output" == *"+ ln -s"* ]]
     [[ "$output" == *"+ write"* ]]
 
-    [ ! -e "$HOME/.config/opencode" ]
     [ ! -e "$HOME/.omp" ]
     [ ! -e "$XDG_STATE_HOME" ]
 }
@@ -104,6 +96,27 @@ setup() {
     [ "$status" -eq 2 ]
 }
 
+@test "install remove link legado que aponta para o repo" {
+    mkdir -p "$HOME/.config/opencode"
+    ln -s "$REPO/skills" "$HOME/.config/opencode/skills"
+
+    run "$REPO/install.sh"
+    [ "$status" -eq 0 ]
+
+    [ ! -e "$HOME/.config/opencode/skills" ]
+    [ -n "$(find "$BACKUPS" -type l -name '*opencode-skills' | head -n 1)" ]
+}
+
+@test "install preserva arquivo real no caminho legado" {
+    mkdir -p "$HOME/.config/opencode"
+    printf 'config propria\n' >"$HOME/.config/opencode/opencode.jsonc"
+
+    run "$REPO/install.sh"
+    [ "$status" -eq 0 ]
+
+    [ "$(cat "$HOME/.config/opencode/opencode.jsonc")" = "config propria" ]
+}
+
 @test "doctor passa depois do install" {
     run "$REPO/install.sh"
     [ "$status" -eq 0 ]
@@ -111,15 +124,15 @@ setup() {
     run "$REPO/doctor.sh"
     [ "$status" -eq 0 ]
     [[ "$output" == *"0 erro(s)"* ]]
-    [[ "$output" == *"skills compartilhados: $(find -L "$REPO/opencode/skills" -maxdepth 1 -mindepth 1 -type d | wc -l)"* ]]
-    [[ "$output" == *"20"* ]]
+    [[ "$output" == *"skills compartilhados: $(find -L "$REPO/skills" -maxdepth 1 -mindepth 1 -type d | wc -l)"* ]]
+    [[ "$output" == *"commands compartilhados: 21"* ]]
 }
 
 @test "doctor acusa link quebrado" {
     run "$REPO/install.sh"
     [ "$status" -eq 0 ]
 
-    ln -sfn /caminho/que/nao/existe "$HOME/.config/opencode/skills"
+    ln -sfn /caminho/que/nao/existe "$HOME/.omp/agent/skills"
     run "$REPO/doctor.sh"
     [ "$status" -ne 0 ]
     [[ "$output" == *"ERRO"* ]]

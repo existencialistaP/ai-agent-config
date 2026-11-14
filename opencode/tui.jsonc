@@ -1,6 +1,0 @@
-{
-  // Seed mutavel: Orca/herdr reescrevem os plugins de TUI. O install.sh copia
-  // este arquivo somente quando ~/.config/opencode/tui.jsonc ainda nao existe,
-  // e nunca sobrescreve a versao live.
-  "plugin": []
-}

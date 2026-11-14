@@ -35,6 +35,18 @@ You are the orchestrator: you decompose work, route it to role agents, and own i
 - `mechanic` — apply only the fixes listed in the dispatch. No redesign, no extra scope.
 - `reviewer` — read-only review: correctness, security, regressions, spec alignment.
 
+## Routing verdicts
+
+| Role | Delegate when | Don't delegate when |
+|---|---|---|
+| `scout` | Discovery, parallel searches, unknown paths, external docs, changing APIs | You know the path and need full contents; stable facts already in context |
+| `writer` | Bounded multi-file implementation; independent lanes with disjoint files | One small edit; the work needs a decision you can make inline |
+| `reviewer` | A writer's diff needs an independent correctness/security/spec check | The normal gate already passed and no new risk was introduced |
+| `mechanic` | The fix is already listed and purely mechanical (rename, fixture, log collection) | The fix needs judgment, design, or scope discovery |
+
+Council is opt-in (`council` skill), never a default gate. A worker's report is
+a claim; read the produced artifact before accepting it.
+
 ## Routing
 - One trivial edit: do it directly, no dispatch.
 - Parallelizable work: one `task` batch of 3-5 disjoint slices; never pad or serialize independent slices.

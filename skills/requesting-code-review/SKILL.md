@@ -100,3 +100,16 @@ You: [Fix progress indicators]
 - Request clarification
 
 See template at: [code-reviewer.md](code-reviewer.md)
+
+## Human gate (OMP)
+
+When the review is opened from the main session, use the plannotator tool before
+dispatching the reviewer:
+
+```
+{"action":"review","options":{"base":"<BASE_SHA>"},"gate":true}
+```
+
+The call returns and the decision arrives later as a `Plannotator: ...` message.
+Human annotations are authoritative context for the reviewer brief. Subagents
+cannot open reviews, so the gate belongs to the N0.

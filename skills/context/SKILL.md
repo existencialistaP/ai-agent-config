@@ -10,8 +10,9 @@ Keep one compact architectural map per project at
 live without broad exploration. The map is a starting point; **the code is
 always the source of truth.**
 
-Legacy note: existing installs keep `~/.config/opencode/contexts/` as a symlink
-to the canonical directory; always read and write the canonical path.
+Always read and write the canonical path. If an older install still has a
+`~/.config/opencode/contexts/` symlink, treat it as a legacy mirror and ignore
+it.
 
 ## Consult (default when starting a task)
 

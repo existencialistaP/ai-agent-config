@@ -1,6 +1,6 @@
 ---
 name: verification-before-completion
-description: Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires running verification commands and confirming output before making any success claims; evidence before assertions always
+description: Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires running verification commands and confirming output before making any success claims; evidence before assertions always. Also use when the user says looks good, done, or ship it, or asks to commit, push, or open a PR right after a change — even when an earlier test run was green; re-run the decisive command first.
 ---
 
 # Verification Before Completion
