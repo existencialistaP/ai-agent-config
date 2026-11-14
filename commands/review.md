@@ -10,9 +10,13 @@ Use the **requesting-code-review** skill (load it) and follow its checklist:
 
 1. Determine the git range: `BASE_SHA` = commit before the work, `HEAD_SHA` = current HEAD
    (`git rev-parse HEAD`, `git log --oneline` to find the base).
-2. Compose the review package: what was implemented (`$ARGUMENTS`), the plan/spec it implements
-   (read `openspec/changes/<nome>/` when referenced), and the git range.
-3. Dispatch the **`reviewer` agent** (read-only) to review `git diff BASE_SHA..HEAD_SHA`,
+2. Open the human gate: ferramenta `plannotator`,
+   `{"action":"review","options":{"base":"<BASE_SHA>"},"gate":true}`. Encerre o turno;
+   as anotações chegam como mensagem `Plannotator: ...`.
+3. Compose the review package: what was implemented (`$ARGUMENTS`), the plan/spec it implements
+   (read `openspec/changes/<nome>/` when referenced), the git range, and the human annotations
+   as authoritative context.
+4. Dispatch the **`reviewer` agent** (read-only) to review `git diff BASE_SHA..HEAD_SHA`,
    following the requesting-code-review template.
 
 Review for: correctness, architecture, regressions, code quality, edge cases, security,

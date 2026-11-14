@@ -1,7 +1,7 @@
 # omp — workflow global
 
 ## Fluxo SDD
-1. `/opsx-propose` (ou `/tospec`): cria o change OpenSpec. Só planejamento, sem código. Pare e espere minha revisão.
+1. `/opsx-propose` (ou `/tospec`): cria o change OpenSpec. Só planejamento, sem código. Ao terminar os artefatos, abra o gate do plannotator sobre `openspec/changes/<change>/` e encerre o turno; a decisão chega como mensagem `Plannotator: ...`.
 2. `/opsx-apply` (ou `/feature`): executa as tasks do change, marcando os checkboxes. Siga até concluir ou travar.
 3. `/opsx-verify` (ou `/finish`): verificação com evidência antes de dar como pronto.
 
@@ -21,6 +21,16 @@ Antes de trabalho não trivial, escolha e **declare** o transporte; o loop e o c
 | Outra sessão/dono continua | handoff (grave o estado em arquivo antes) |
 
 Papéis `scout`/`writer`/`reviewer`/`mechanic` vivem em `agents/`; a skill `orchestrate` é a fonte do roteamento.
+
+## Gates (plannotator)
+
+Ferramenta `plannotator` (device `xd://plannotator`). Abrir review é assíncrono: a chamada retorna e a decisão chega como mensagem `Plannotator: ... (pn-xxxxxx)` — isso é decisão, não chat.
+
+- **Propose:** `{"action":"annotate","target":["openspec/changes/<change>/"],"gate":true}`. Não escreva `queue.md`/`orchestration.md` com status `planned` antes do Approve.
+- **Review:** `{"action":"review","options":{"base":"<BASE_SHA>"},"gate":true}` antes de despachar o `reviewer`; as anotações humanas são contexto autoritativo.
+- **Subagentes não abrem review:** o gate é sempre do N0.
+- **Nunca** rode `omp --plan` puro: ele entra no plan mode do plannotator e ignora `modelRoles.plan`. Use `--plan=<modelo>` ou `PI_PLAN_MODEL`.
+- CLI bloqueante só com você presente: `plannotator annotate <files> --gate --json --require-approval --result-file /tmp/<name>.json` (0 aprovado, 1 não, 2 erro).
 
 ## Definition of Done
 - Verificação do projeto verde (test/lint/build) com o output colado; depois `/opsx-verify`.

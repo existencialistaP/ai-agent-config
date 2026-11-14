@@ -17,5 +17,6 @@ $ARGUMENTS
 2. **Spec alinhado?** Compare com o change em `openspec/changes/<nome>/`; confirme os tasks `- [x]`.
 3. **Testes/Lint**: rode os comandos do projeto e cole os outputs.
 4. **Problemas?** Se houver falhas: corrija e re-execute `/feature`.
+5. **Gate final**: se uma review do plannotator foi aberta, registre a decisão (`Approved` / `Approved with notes` / `Dismissed`) em `verification.md`; sem decisão, não feche.
 
 > ❌ NÃO declare "pronto" sem evidência passo a passo

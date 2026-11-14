@@ -16,6 +16,15 @@ automatic with a minimal gate: classify the request in one sentence
 single ok; then write the artifacts without question rounds. In either mode, write each
 artifact to its file before proceeding. Never dispatch a `writer` and never edit code.
 
+**Gate humano (obrigatório).** Depois de escrever os artefatos e antes de criar
+`queue.md`/`orchestration.md` com status `planned`:
+1. Liste os artefatos: `openspec status --change "<name>" --json | jq -r '[.artifactPaths[].existingOutputPaths[]]|unique|.[]'` (fallback: `openspec/changes/<name>/`).
+2. Abra o gate: ferramenta `plannotator`, `{"action":"annotate","target":[...],"gate":true}`.
+3. Encerre o turno. A decisão chega como mensagem `Plannotator: ...`.
+   - **Approved:** siga para o `queue.md`/`orchestration.md`.
+   - **Approved with notes:** trate as notas como requisitos e ajuste os artefatos.
+   - **Dismissed:** incorpore o feedback e reapresente; não implemente.
+
 Planning may cover 1 or N tasks/slices in the same session: each becomes its own line
 with status `queued` in the change's `queue.md`. Deliverable: `orchestration.md` with
 status `planned`, the queue filled, and the next step — handoff to the worker.

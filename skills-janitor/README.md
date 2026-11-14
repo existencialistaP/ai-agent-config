@@ -27,6 +27,23 @@ Thresholds: fail on negative violations; treat cross-family similarity
 `>= 0.75` as an error and `>= 0.50` as a warning. Discard `--strict` results
 for same-family pairs (`openspec-*`, `ponytail-*`) — overlap there is expected.
 
+## Real usage
+
+`scripts/skill_usage.py` parses OMP session traces and counts actual
+`skill://<name>` loads, tool calls, zero-skill sessions and per-project usage,
+joined with the catalog cost:
+
+```bash
+python3 scripts/skill_usage.py                  # all sessions
+python3 scripts/skill_usage.py --exclude-probe  # skip -tmp* probe sessions
+python3 scripts/skill_usage.py --json
+```
+
+Use it next to Tier 3: `route_live.py` measures recall on authored prompts,
+`skill_usage.py` measures what actually fires. A skill with zero loads and a
+large body is a pruning candidate; a safety-net skill (debugging, verification)
+is not, even at zero — judge by expected value, not count.
+
 Cases look like:
 
 ```json

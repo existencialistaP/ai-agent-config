@@ -157,6 +157,10 @@ The N0 supervises; workers execute.
 
 1. **Write contracts.** One `dispatch/<slice>.md` per slice, before any dispatch.
 2. **Dispatch the batch.** All independent slices in one call. Record owner, status, and checkpoint in `orchestration.md`.
+   Canonical shape — `tasks` is an array; `agent`/`task` at the top level is a schema error:
+   ```json
+   {"context":"shared contract", "tasks":[{"agent":"writer","task":"...","solutionSpace":"..."}]}
+   ```
 3. **Review each slice.** When a `writer` returns, dispatch a `reviewer` over that slice's diff. Review findings go back to the same writer as a follow-up.
 4. **Integrate on the N0.** Apply, sequence, and resolve conflicts yourself. No worker owns the union of the diffs.
 5. **Run the full suite on the N0.** The N0 runs the project gates once over the union of changes: build, tests, formatter, linter. Workers never verify their own work.
