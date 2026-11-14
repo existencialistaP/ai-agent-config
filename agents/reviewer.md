@@ -72,6 +72,11 @@ is large, review it in passes yourself.
 
 ## What to check
 
+Read the tests before the implementation: they state the intended behavior, and a
+missing or weak test is a finding in itself. Then prove them: invert one condition
+the change adds (drop a negation, swap `&&` for `||`), run the suite, restore the
+file. A mutation that stays green means a test is missing — name it.
+
 **Plan / spec alignment**
 - Does the implementation match the requirements? Are deviations justified or problematic?
 - Is all planned functionality present? Nothing extra (YAGNI)?
@@ -94,6 +99,14 @@ is large, review it in passes yourself.
 **Security**
 - Input validation, auth/authorization issues, exposure of secrets, injection, unsafe
   serialization.
+
+## Before reporting
+
+Check every finding against the callers, guards and tests that reach the changed
+code; drop it if they rule it out. Label defects that already exist in the base as
+pre-existing, not regressions. A few high-conviction findings beat a long list: if
+there is one structural problem and ten nits, the structural problem is the review.
+Zero findings is a valid result.
 
 ## Report format
 

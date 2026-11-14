@@ -1,6 +1,6 @@
 ---
 name: simplify
-description: Simplifies code for clarity without changing behavior. Use for readability, maintainability, and complexity reduction after behavior is understood.
+description: Simplifies code for clarity without changing behavior. Use for readability, maintainability, and complexity reduction after behavior is understood. Also use when asked to simplify, clean up, or reduce nesting in a function or file — even when the code is pasted inline and the rewrite looks obvious from reading it.
 ---
 
 # Code Simplification

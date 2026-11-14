@@ -116,8 +116,14 @@ lint_skill() {
             print_issue "info" "$name" "Description is long ($desc_len chars) - consider trimming to < 300"
         fi
 
-        # Trigger word check
-        if ! echo "$desc" | grep -qi -E '(when|trigger|use for|invoke|mention|says|asks|also use|use this|relevant|appropriate|helps with|designed for)'; then
+        # Trigger word check — skip user-invoked skills
+        # (disable-model-invocation: true), which are reached by name, not by
+        # description matching. "Use before" is a valid trigger form.
+        local user_invoked=false
+        if echo "$frontmatter" | grep -q '^disable-model-invocation:[[:space:]]*true'; then
+            user_invoked=true
+        fi
+        if [[ "$user_invoked" == "false" ]] && ! echo "$desc" | grep -qi -E '(when|trigger|use for|use before|invoke|mention|says|asks|also use|use this|relevant|appropriate|helps with|designed for)'; then
             print_issue "warning" "$name" "Description doesn't explain when to trigger - add 'Use when...' or 'Also use when...'"
         fi
 

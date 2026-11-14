@@ -6,7 +6,10 @@ description: >
   that names what was skipped. Use on any coding task (writing, fixing,
   refactoring, reviewing, choosing dependencies) and when the user says
   "ponytail", "be lazy", "simplest solution", "yagni", or complains about
-  over-engineering or bloat.
+  over-engineering or bloat. Use when the user asks whether a dependency is
+  needed or the standard library already covers it. Use even when the ask
+  looks like a one-line answer — the ladder and the skipped-work note still
+  apply.
 license: MIT
 ---
 

@@ -1,0 +1,58 @@
+{
+  "simplify": {
+    "positive": [
+      "Simplify this function, it works but it is hard to read:\n\nfunction normalizeTags(tags){ var out=[]; for(var i=0;i<tags.length;i++){ var t=tags[i].trim().toLowerCase(); if(out.indexOf(t)===-1) out.push(t);} return out; }",
+      "Reduce the nesting in this function:\n\nfunction pick(a, b, c) { if (a) { if (b) { return c ? 1 : 2; } } return 0; }",
+      "Clean this up, it works but it has grown hard to follow:\n\nfunction fee(x) { if (x == null) { return 0; } else { if (x > 100) { return 5; } else { return 1; } } }"
+    ],
+    "negative": [
+      {"prompt": "Add unit tests for this function:\n\nfunction normalizeTags(tags){ return tags; }", "owner": "test-driven-development"},
+      {"prompt": "Why does this throw? TypeError: Cannot read properties of undefined at sum (calc.js:4)", "owner": "systematic-debugging"}
+    ]
+  },
+  "systematic-debugging": {
+    "positive": [
+      "This worked yesterday and now returns the wrong total:\n\nfunction sum(items){ var s=0; for (var i=1;i<items.length;i++) s+=items[i]; return s; }",
+      "Why does this throw? Here is the stack trace:\n\nTypeError: Cannot read properties of undefined\n    at splitCents (money.js:12)",
+      "What broke? Here is the diff:\n\n- if (i <= len)\n+ if (i < len)"
+    ],
+    "negative": [
+      {"prompt": "Simplify this function, it works but it is hard to read:\n\nfunction fee(x){ if(x>100){return 5}else{return 1} }", "owner": "simplify"},
+      {"prompt": "Review this diff before I merge it:\n\n- if (i <= len)\n+ if (i < len)", "owner": "requesting-code-review"}
+    ]
+  },
+  "test-driven-development": {
+    "positive": [
+      "Add unit tests for this function:\n\nfunction splitCents(cents, n){ return Math.floor(cents / n); }",
+      "Fix this bug: splitCents loses a cent. Here is the function:\n\nfunction splitCents(cents, n){ return Math.floor(cents / n); }",
+      "Write a failing test for this bug before we fix it:\n\nfunction splitCents(cents, n){ return Math.floor(cents / n); }",
+      "Change this function so size can never exceed 100:\n\nfunction setSize(n){ return n; }"
+    ],
+    "negative": [
+      {"prompt": "Refactor this function so it is easier to read:\n\nfunction normalizeTags(tags){ return tags; }", "owner": "simplify"},
+      {"prompt": "What broke? Here is the diff:\n\n- if (i <= len)\n+ if (i < len)", "owner": "systematic-debugging"}
+    ]
+  },
+  "verification-before-completion": {
+    "positive": [
+      "Tests should pass now. Mark the task complete and commit it.",
+      "Looks good, let's open the PR.",
+      "Done — the fix is in. Push it so I can merge."
+    ],
+    "negative": [
+      {"prompt": "Write a failing test for this bug before we fix it:\n\nfunction splitCents(cents, n){ return Math.floor(cents / n); }", "owner": "test-driven-development"},
+      {"prompt": "Review this diff for regressions before I merge:\n\n- if (i <= len)\n+ if (i < len)", "owner": "requesting-code-review"}
+    ]
+  },
+  "ponytail": {
+    "positive": [
+      "This is over-engineered for what we need. What is the smallest change that works?",
+      "Do we really need a dependency for this? Can the standard library do it?",
+      "Be lazy here: YAGNI, no extra abstraction, fewest files possible."
+    ],
+    "negative": [
+      {"prompt": "Review this diff before I merge it:\n\n- if (i <= len)\n+ if (i < len)", "owner": "requesting-code-review"},
+      {"prompt": "Why does this throw? Here is the stack trace: TypeError at splitCents (money.js:12)", "owner": "systematic-debugging"}
+    ]
+  }
+}
